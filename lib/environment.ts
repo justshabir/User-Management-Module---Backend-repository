@@ -27,15 +27,15 @@ class Environment {
 
   getDBName(): string {
     if (this.environment === Environments.prod_environment) {
-      return 'db_usaf_website_prod';
+      return 'db_zumaridi_prod';
     }
     if (this.environment === Environments.dev_environment) {
-      return 'db_usaf_website_dev';
+      return 'db_zumaridi_dev';
     }
     if (this.environment === Environments.qa_environment) {
-      return 'db_usaf_website_qa';
+      return 'db_zumaridi_qa';
     }
-    return 'db_usaf_website_local';
+    return 'db_zumaridi_local';
   }
 }
 /**

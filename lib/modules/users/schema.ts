@@ -32,7 +32,7 @@ const schema = new Schema({
   profilePhoto: { type: String },
   source: {
     type: String,
-    enum: ['local', 'google', 'linkedin'],
+    enum: ['local', 'google', 'linkedin', 'microsoft'],
     default: 'local',
   },
   reset_password_token: {
