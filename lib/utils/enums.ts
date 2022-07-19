@@ -4,3 +4,9 @@ export enum accountSourceEnum {
   LINKEDIN = 'linkedin',
   MICROSOFT = 'microsoft',
 }
+
+export enum accountStatusEnum {
+  ACTIVE = 'Active',
+  PENDING = 'Pending',
+  SUSPENDED = 'Suspended',
+}

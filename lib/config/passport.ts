@@ -1,10 +1,12 @@
 import passport from 'passport';
 import GoogleStrategy from 'passport-google-oauth20';
 import LinkedInStrategy from 'passport-linkedin-oauth2';
+import MicrosoftStrategy from 'passport-microsoft';
 import LocalStrategy from 'passport-local';
 import dotenv from 'dotenv';
 import { IUser } from '../modules/users/model';
 import user_service from '../modules/users/service';
+import { accountSourceEnum, accountStatusEnum } from '../utils/enums';
 dotenv.config();
 
 const UserService = new user_service();
@@ -108,8 +110,8 @@ passport.use(
               last_name: givenName || displayName,
             },
             email: email,
-            source: 'linkedin',
-            status: 'Active',
+            source: accountSourceEnum.LINKEDIN,
+            status: accountStatusEnum.ACTIVE,
             profilePhoto: profilePhoto,
             modification_notes: [
               {
@@ -123,7 +125,54 @@ passport.use(
             return done(err, user_data);
           });
         }
-        if (currentUser.source != 'linkedin') {
+        if (currentUser.source != accountSourceEnum.LINKEDIN) {
+          return done(err, false, {
+            message: `You have previously signed up with a different signin method`,
+          });
+        }
+        currentUser.lastVisited = new Date();
+        return done(null, currentUser);
+      });
+    }
+  )
+);
+passport.use(
+  new MicrosoftStrategy.Strategy(
+    {
+      clientID: process.env.MICROSOFT_CLIENT_ID,
+      clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+      callbackURL: process.env.MICROSOFT_CALL_BACK_URL,
+      scope: ['user.read'],
+    },
+    async function (accessToken, refreshToken, profile, done) {
+      const email = profile.emails[0]?.value;
+      const displayName = profile.displayName;
+      const familyName = profile.name?.familyName;
+      const givenName = profile.name?.givenName;
+      UserService.filterUser({ email }, (err: any, currentUser: IUser) => {
+        if (!currentUser) {
+          const user_params: IUser = {
+            name: {
+              first_name: familyName || givenName,
+              last_name: givenName || displayName,
+            },
+            email: email,
+            source: accountSourceEnum.MICROSOFT,
+            status: accountStatusEnum.ACTIVE,
+            profilePhoto: '',
+            modification_notes: [
+              {
+                modified_on: new Date(Date.now()),
+                modified_by: null,
+                modification_note: 'New user created',
+              },
+            ],
+          };
+          return UserService.createUser(user_params, (err: any, user_data: IUser) => {
+            return done(err, user_data);
+          });
+        }
+        if (currentUser.source != accountSourceEnum.MICROSOFT) {
           return done(err, false, {
             message: `You have previously signed up with a different signin method`,
           });

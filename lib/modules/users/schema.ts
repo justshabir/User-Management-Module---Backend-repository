@@ -27,7 +27,7 @@ const schema = new Schema({
     type: Boolean,
     default: false,
   },
-  status: { type: String, enum: ['Pending', 'Active'], default: 'Pending' },
+  status: { type: String, enum: ['Pending', 'Active', 'Suspended'], default: 'Pending' },
   confirmationCode: { type: String },
   profilePhoto: { type: String },
   source: {
