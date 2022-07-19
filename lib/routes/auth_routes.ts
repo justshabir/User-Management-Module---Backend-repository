@@ -23,6 +23,10 @@ export class AuthRoutes {
     app.get('/api/auth/google/callback', (req: Request, res: Response, next: NextFunction) => {
       this.auth_controller.google_callback(req, res, next);
     });
+    app.get('/api/auth/microsoft', this.auth_controller.microsoft());
+    app.get('/api/auth/microsoft/callback', (req: Request, res: Response, next: NextFunction) => {
+      this.auth_controller.microsoft_callback(req, res, next);
+    });
     app.get('/api/auth/login/success', (req: Request, res: Response, next: NextFunction) => {
       this.auth_controller.login_success(req, res);
     });
