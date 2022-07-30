@@ -30,6 +30,7 @@ export class AuthController {
      */
   }
   public logout_user(req: any, res: Response) {
+    return successResponse('success......', null, res); // replace this with appropriate logic
     /**
      * Write the neccessary logic to logout a user
      * It is important to update the `lastvisited`

@@ -13,7 +13,6 @@ import './passport';
 dotenv.config();
 class App {
   public app: express.Application;
-
   public mongoUrl =
     process.env.NODE_ENV === 'development'
       ? `mongodb://localhost/${environment.getDBName()}`
@@ -51,12 +50,12 @@ class App {
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
-        cookie: {
-          secure: true,
-          httpOnly: true,
-          sameSite: 'none',
-          maxAge: 60 * 60 * 24 * 1000,
-        },
+        // cookie: {
+        //   secure: true,
+        //   httpOnly: true,
+        //   sameSite: 'none',
+        //   maxAge: 60 * 60 * 24 * 1000,
+        // },
       })
     );
     this.app.use(passport.initialize());

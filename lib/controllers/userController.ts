@@ -26,7 +26,7 @@ export class UserController {
   }
 
   public update_user(req: Request, res: Response) {
-    const { email, last_name, first_name, phone_number = '', gender = '', is_deleted } = req.body;
+    const { email, last_name, first_name, phone_number = '', gender = '', isDeleted } = req.body;
     if (
       (req.params.id && (first_name || last_name)) ||
       last_name ||
@@ -40,7 +40,7 @@ export class UserController {
         if (err) {
           mongoError(err, res);
         } else if (user_data) {
-          user_data.modification_notes.push({
+          user_data.modificationNotes.push({
             modified_on: new Date(Date.now()),
             modified_by: null,
             modification_note: 'User data updated',
@@ -57,8 +57,8 @@ export class UserController {
             email: email ? email : user_data.email,
             phone_number: phone_number ? phone_number : user_data.phone_number,
             gender: gender ? gender : user_data.gender,
-            is_deleted: is_deleted ? is_deleted : user_data.is_deleted,
-            modification_notes: user_data.modification_notes,
+            isDeleted: isDeleted ? isDeleted : user_data.isDeleted,
+            modificationNotes: user_data.modificationNotes,
           };
           this.user_service.updateUser(user_params, (err: any) => {
             if (err) {
