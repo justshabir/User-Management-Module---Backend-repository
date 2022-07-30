@@ -11,20 +11,6 @@ dotenv.config();
 
 const UserService = new user_service();
 
-passport.serializeUser((user: IUser, done: any) => {
-  done(null, user._id);
-});
-
-passport.deserializeUser(async (id: number, done: any) => {
-  const user_filter = { _id: id };
-  UserService.filterUser(user_filter, (err: any, user: IUser) => {
-    if (err) {
-      console.log('Passport serialization error', err);
-    }
-    done(err, user);
-  });
-});
-
 passport.use(
   new LocalStrategy.Strategy(async function (username: string, password: string, done: any) {
     /**
@@ -64,7 +50,7 @@ passport.use(
             source: 'google',
             status: 'Active',
             profilePhoto: profilePhoto,
-            modification_notes: [
+            modificationNotes: [
               {
                 modified_on: new Date(Date.now()),
                 modified_by: null,
@@ -113,7 +99,7 @@ passport.use(
             source: accountSourceEnum.LINKEDIN,
             status: accountStatusEnum.ACTIVE,
             profilePhoto: profilePhoto,
-            modification_notes: [
+            modificationNotes: [
               {
                 modified_on: new Date(Date.now()),
                 modified_by: null,
@@ -160,7 +146,7 @@ passport.use(
             source: accountSourceEnum.MICROSOFT,
             status: accountStatusEnum.ACTIVE,
             profilePhoto: '',
-            modification_notes: [
+            modificationNotes: [
               {
                 modified_on: new Date(Date.now()),
                 modified_by: null,
@@ -183,3 +169,16 @@ passport.use(
     }
   )
 );
+passport.serializeUser((user: IUser, done: any) => {
+  done(null, user._id);
+});
+
+passport.deserializeUser(async (id: number, done: any) => {
+  const user_filter = { _id: id };
+  UserService.filterUser(user_filter, (err: any, user: IUser) => {
+    if (err) {
+      console.log('Passport serialization error', err);
+    }
+    done(err, user);
+  });
+});
