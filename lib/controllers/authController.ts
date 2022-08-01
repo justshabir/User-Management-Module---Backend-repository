@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
-const jwt = require('jsonwebtoken');
 import { successResponse, failureResponse } from '../modules/common/service';
 import authMiddleWare from '../middlewares/auth';
 import { ClientBaseUrl } from '../config/app';
@@ -31,6 +30,7 @@ export class AuthController {
      */
   }
   public logout_user(req: any, res: Response) {
+    return successResponse('success......', null, res); // replace this with appropriate logic
     /**
      * Write the neccessary logic to logout a user
      * It is important to update the `lastvisited`
@@ -67,6 +67,25 @@ export class AuthController {
   }
   public google_callback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('google', function (err, user, info) {
+      if (info && Object.keys(info).length) {
+        return res.redirect(
+          `${ClientBaseUrl}/login?redirect=fail&error=${encodeURIComponent(info.message)}`
+        );
+      }
+      if (err) return next(err);
+      req.login(user, function (err) {
+        if (err) return next(err);
+        if (user) {
+          return res.redirect(`${ClientBaseUrl}/login?redirect=success`);
+        }
+      });
+    })(req, res, next);
+  }
+  public microsoft() {
+    return passport.authenticate('microsoft', { prompt: 'select_account' });
+  }
+  public microsoft_callback(req: Request, res: Response, next: NextFunction) {
+    passport.authenticate('microsoft', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
           `${ClientBaseUrl}/login?redirect=fail&error=${encodeURIComponent(info.message)}`

@@ -43,7 +43,7 @@ export class UserController {
         if (err) {
           mongoError(err, res);
         } else if (user_data) {
-          user_data.modification_notes.push({
+          user_data.modificationNotes.push({
             modified_on: new Date(Date.now()),
             modified_by: null,
             modification_note: 'User data updated',

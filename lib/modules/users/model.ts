@@ -1,6 +1,8 @@
 import { ModificationNote } from '../common/model';
 
 export interface IUser {
+  is_deleted: any;
+  modification_notes: any;
   _id?: string;
   name: {
     first_name: string;
@@ -14,13 +16,13 @@ export interface IUser {
   email: string;
   phone_number?: string;
   gender?: string;
-  is_deleted?: boolean;
+  isDeleted?: boolean;
   password?: string;
   status?: string;
   confirmationCode?: string;
   profilePhoto?: string;
   source?: string;
-  reset_password_token?: string;
-  reset_password_expires?: number;
-  modification_notes: ModificationNote[];
+  resetPasswordToken?: string;
+  resetPasswordExpires?: number;
+  modificationNotes: ModificationNote[];
 }
