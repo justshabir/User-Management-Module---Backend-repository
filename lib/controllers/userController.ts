@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import cryptoJs from 'crypto-js';
 import {
   insufficientParameters,
   mongoError,
@@ -70,7 +71,7 @@ export class UserController {
             if (err) {
               mongoError(err, res);
             } else {
-              successResponse('update user successfull', null, res);
+              successResponse('update user successfully', null, res);
             }
           });
         } else {
@@ -81,6 +82,46 @@ export class UserController {
       insufficientParameters(res);
     }
   }
+
+  public update_user_password(req: Request, res: Response) {
+    const { current_password, new_password, confirm_password } = req.body;
+
+    if (current_password && new_password && confirm_password) {
+      const user_filter = { _id: req.params.id };
+      this.user_service.filterUser(user_filter, (err: any, user_data: IUser) => {
+        if (err) {
+          mongoError(err, res);
+        } else if (user_data) {
+          if (user_data.password === cryptoJs.SHA256(current_password).toString()) {
+            if (new_password === confirm_password) {
+              user_data.password = cryptoJs.SHA256(new_password).toString();
+              user_data.modification_notes.push({
+                modified_on: new Date(Date.now()),
+                modified_by: null,
+                modification_note: 'User password updated',
+              });
+              this.user_service.updateUser(user_data, (err: any) => {
+                if (err) {
+                  mongoError(err, res);
+                } else {
+                  successResponse('update user successfully', null, res);
+                }
+              });
+            } else {
+              failureResponse('new password and confirm password does not match', null, res);
+            }
+          }
+        } else {
+          failureResponse('invalid user', null, res);
+        }
+      });
+    } else {
+      // error response if some fields are missing in request body
+      return insufficientParameters(res);
+    }
+
+  }
+
   public delete_user(req: Request, res: Response) {
     if (req.params.id) {
       this.user_service.deleteUser(req.params.id, (err: any, delete_details) => {
