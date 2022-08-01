@@ -16,6 +16,9 @@ const schema = new Schema({
     unique: [true, 'email already registered'],
   },
   password: { type: String, select: false },
+  platformLanguage: { type: String },
+  profession: { type: String },
+  country: { type: String },
   phone_number: String,
   gender: String,
   isAdmin: {

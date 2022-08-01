@@ -17,7 +17,7 @@ export class UserController {
         if (err) {
           mongoError(err, res);
         } else {
-          successResponse('get user successfull', user_data, res);
+          successResponse('get user successfully', user_data, res);
         }
       });
     } else {
@@ -26,14 +26,17 @@ export class UserController {
   }
 
   public update_user(req: Request, res: Response) {
-    const { email, last_name, first_name, phone_number = '', gender = '', is_deleted } = req.body;
+    const { email, last_name, first_name, phone_number = '', gender = '', profession = '', country, platFormLanguage = '', is_deleted, } = req.body;
     if (
       (req.params.id && (first_name || last_name)) ||
       last_name ||
       first_name ||
       email ||
       phone_number ||
-      gender
+      gender ||
+      profession ||
+      country ||
+      platFormLanguage
     ) {
       const user_filter = { _id: req.params.id };
       this.user_service.filterUser(user_filter, (err: any, user_data: IUser) => {
@@ -50,14 +53,17 @@ export class UserController {
             name:
               first_name || last_name
                 ? {
-                    first_name: first_name ? first_name : user_data.name.first_name,
-                    last_name: first_name ? last_name : user_data.name.last_name,
-                  }
+                  first_name: first_name ? first_name : user_data.name.first_name,
+                  last_name: first_name ? last_name : user_data.name.last_name,
+                }
                 : user_data.name,
             email: email ? email : user_data.email,
             phone_number: phone_number ? phone_number : user_data.phone_number,
             gender: gender ? gender : user_data.gender,
             is_deleted: is_deleted ? is_deleted : user_data.is_deleted,
+            profession: profession ? profession : user_data.profession,
+            country: country ? country : user_data.country,
+            platFormLanguage: platFormLanguage ? platFormLanguage : user_data.platFormLanguage,
             modification_notes: user_data.modification_notes,
           };
           this.user_service.updateUser(user_params, (err: any) => {
@@ -81,7 +87,7 @@ export class UserController {
         if (err) {
           mongoError(err, res);
         } else if (delete_details.deletedCount !== 0) {
-          successResponse('delete user successfull', null, res);
+          successResponse('delete user successfully', null, res);
         } else {
           failureResponse('invalid user', null, res);
         }
