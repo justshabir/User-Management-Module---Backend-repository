@@ -7,8 +7,8 @@ const schema = new Schema(
   {
     name: {
       type: {
-        first_name: String,
-        last_name: String,
+        firstName: String,
+        lastName: String,
       },
     },
     email: {
@@ -17,7 +17,7 @@ const schema = new Schema(
       unique: [true, 'email already registered'],
     },
     password: { type: String, select: false },
-    phone_number: String,
+    phoneNumber: String,
     gender: String,
     isAdmin: {
       type: Boolean,

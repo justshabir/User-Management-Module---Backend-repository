@@ -3,13 +3,13 @@ import { ModificationNote } from '../common/model';
 export interface IUser {
   _id?: string;
   name: {
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
   isAdmin?: boolean;
   lastVisited?: Date;
   email: string;
-  phone_number?: string;
+  phoneNumber?: string;
   gender?: string;
   isDeleted?: boolean;
   password?: string;

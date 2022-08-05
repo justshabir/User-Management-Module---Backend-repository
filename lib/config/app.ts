@@ -18,17 +18,17 @@ class App {
       ? `mongodb://localhost/${environment.getDBName()}`
       : process.env.MONGO_DB_URI;
 
-  private user_routes: UserRoutes = new UserRoutes();
-  private auth_routes: AuthRoutes = new AuthRoutes();
-  private common_routes: CommonRoutes = new CommonRoutes();
+  private userRoutes: UserRoutes = new UserRoutes();
+  private authRoutes: AuthRoutes = new AuthRoutes();
+  private commonRoutes: CommonRoutes = new CommonRoutes();
 
   constructor() {
     this.app = express();
     this.config();
     this.mongoSetup();
-    this.auth_routes.route(this.app);
-    this.user_routes.route(this.app);
-    this.common_routes.route(this.app);
+    this.authRoutes.route(this.app);
+    this.userRoutes.route(this.app);
+    this.commonRoutes.route(this.app);
   }
 
   private config(): void {
