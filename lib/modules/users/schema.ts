@@ -3,6 +3,10 @@ import { ModificationNote } from '../common/model';
 
 const { Schema } = mongoose;
 
+const referralSchema = new Schema({
+  //
+});
+
 const schema = new Schema(
   {
     name: {
@@ -49,15 +53,10 @@ const schema = new Schema(
     },
     modificationNotes: [ModificationNote],
     refId: {
-    type: Schema.Types.ObjectId,
-    ref: "referral",
+    type: String,
+    unique: true,
   },
-  link: {
-    type: String, },
-  createdAt: {
-    type: Date,
-    default: Date.now(),
-  },
+  referrals: [referralSchema]
   },
   {
     timestamps: true,
