@@ -48,10 +48,21 @@ const schema = new Schema(
       type: Date,
     },
     modificationNotes: [ModificationNote],
+    refId: {
+    type: Schema.Types.ObjectId,
+    ref: "referral",
+  },
+  link: {
+    type: String, },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
   },
   {
     timestamps: true,
   }
+  
 );
 
 export default mongoose.model('users', schema);
