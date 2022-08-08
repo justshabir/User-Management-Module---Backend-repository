@@ -38,7 +38,7 @@ export function insufficientParameters(res: Response) {
 }
 
 export function mongoError(err: any, res: Response) {
-  res.status(response_status_codes.internal_server_error).json({
+  res.status(response_status_codes.iinternalServerError).json({
     STATUS: 'FAILURE',
     MESSAGE: 'MongoDB error',
     DATA: err,

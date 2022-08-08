@@ -5,8 +5,8 @@ export interface IUser {
   modification_notes: any;
   _id?: string;
   name: {
-    first_name: string;
-    last_name: string;
+    firstName: string;
+    lastName: string;
   };
   isAdmin?: boolean;
   platFormLanguage?: string;
@@ -14,7 +14,7 @@ export interface IUser {
   country?: string;
   lastVisited?: Date;
   email: string;
-  phone_number?: string;
+  phoneNumber?: string;
   gender?: string;
   isDeleted?: boolean;
   password?: string;

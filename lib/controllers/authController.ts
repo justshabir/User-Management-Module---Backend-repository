@@ -9,7 +9,8 @@ export class AuthController {
   // private user_service: UserService = new UserService();
 
   public create_user(req: Request, res: Response) {
-    // const { password, email, last_name, first_name, phone_number = '', gender = '' } = req.body;
+    return successResponse('success......', null, res); // replace this with appropriate logic
+    // const { password, email, lastName, firstName, phoneNumber = '', gender = '' } = req.body;
     /**
      * this check whether all required fields were send through the request
      * Wtite your account registration logic here.
