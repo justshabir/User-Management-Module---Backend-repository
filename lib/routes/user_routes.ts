@@ -9,15 +9,15 @@ export class UserRoutes {
     });
 
     app.put('/api/user/:id', (req: Request, res: Response) => {
-      this.userController.updateUser(req, res);
+      this.userController.update_user(req, res);
     });
 
     app.put('/api/user/:id/passwordupdate', (req: Request, res: Response) => {
-      this.user_controller.update_user_password(req, res);
+      this.userController.update_user_password(req, res);
     });
 
     app.delete('/api/user/:id', (req: Request, res: Response) => {
-      this.userController.deleteUserr(req, res);
+      this.userController.delete_user(req, res);
     });
   }
 }

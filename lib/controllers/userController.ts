@@ -27,17 +27,14 @@ export class UserController {
   }
 
   public update_user(req: Request, res: Response) {
-    const { email, last_name, first_name, phone_number = '', gender = '', profession = '', country, platFormLanguage = '', is_deleted, } = req.body;
+    const { email, last_name, first_name, phone_number = '', gender = '', isDeleted } = req.body;
     if (
       (req.params.id && (first_name || last_name)) ||
       last_name ||
       first_name ||
       email ||
       phone_number ||
-      gender ||
-      profession ||
-      country ||
-      platFormLanguage
+      gender
     ) {
       const user_filter = { _id: req.params.id };
       this.user_service.filterUser(user_filter, (err: any, userData: IUser) => {
@@ -61,7 +58,7 @@ export class UserController {
             email: email ? email : userData.email,
             phone_number: phone_number ? phone_number : userData.phoneNumber,
             gender: gender ? gender : userData.gender,
-            isDeleted: is_deleted ? is_deleted : userData.isDeleted,
+            isDeleted: isDeleted ? isDeleted : userData.isDeleted,
             modificationNotes: userData.modificationNotes,
           };
           this.user_service.updateUser(userParams, (err: any) => {
