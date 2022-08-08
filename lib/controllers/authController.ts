@@ -3,14 +3,17 @@ import passport from 'passport';
 import { successResponse, failureResponse } from '../modules/common/service';
 import authMiddleWare from '../middlewares/auth';
 import { ClientBaseUrl } from '../config/app';
+import UserService from 'modules/users/service';
+import { IUser } from 'modules/users/model';
 
 export class AuthController {
   /** Create new instances of needed services here example shown below */
-  // private user_service: UserService = new UserService();
+  private user_service: UserService = new UserService();
 
   public create_user(req: Request, res: Response) {
     return successResponse('success......', null, res); // replace this with appropriate logic
     // const { password, email, lastName, firstName, phoneNumber = '', gender = '' } = req.body;
+
     /**
      * this check whether all required fields were send through the request
      * Wtite your account registration logic here.
@@ -31,12 +34,19 @@ export class AuthController {
      */
   }
   public logout_user(req: any, res: Response) {
-    return successResponse('success......', null, res); // replace this with appropriate logic
-    /**
+      /**
      * Write the neccessary logic to logout a user
      * It is important to update the `lastvisited`
      * property on the user's object to the current date
      */
+    this.user_service.filterUser({_id: req?.user.id}, (err: any, user_data:any)=>{
+      if (user_data){
+        user_data.lastVisited = new Date();
+        user_data.save((err:any, updated_user_data: IUser)=>{
+          return successResponse('Logout successfully', updated_user_data, res)
+        })
+      } else return failureResponse('Invalid Session', err, res);
+    })
   }
 
   /**

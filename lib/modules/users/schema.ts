@@ -1,11 +1,19 @@
 import mongoose from 'mongoose';
 import { ModificationNote } from '../common/model';
-
 const { Schema } = mongoose;
 
+
 const referralSchema = new Schema({
-  //
-});
+  user:{
+    type: Schema.Types.ObjectId,
+    ref: 'users'
+   }
+},
+ {
+    timestamps: true
+  }
+);
+
 
 const schema = new Schema(
   {
