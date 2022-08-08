@@ -17,7 +17,7 @@ const schema = new Schema(
       unique: [true, 'email already registered'],
     },
     password: { type: String, select: false },
-    phone_number: String,
+    phoneNumber: String,
     gender: String,
     isAdmin: {
       type: Boolean,
@@ -28,7 +28,12 @@ const schema = new Schema(
       type: Boolean,
       default: false,
     },
-    status: { type: String, enum: ['Pending', 'Active'], default: 'Pending' },
+
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    status: { type: String, enum: ['Pending', 'Active', 'Suspended'], default: 'Pending' },
     confirmationCode: { type: String },
     profilePhoto: { type: String },
     source: {
@@ -36,13 +41,17 @@ const schema = new Schema(
       enum: ['local', 'google', 'linkedin', 'microsoft'],
       default: 'local',
     },
-    reset_password_token: {
+    resetPasswordToken: {
       type: String,
     },
-    reset_password_expires: {
+    resetPasswordExpires: {
       type: Date,
     },
     modificationNotes: [ModificationNote],
-  });
+  },
+  {
+    timestamps: true,
+  }
+);
 
 export default mongoose.model('users', schema);

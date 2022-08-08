@@ -7,9 +7,6 @@ export interface IUser {
     lastName: string;
   };
   isAdmin?: boolean;
-  platFormLanguage?: string;
-  profession?: string;
-  country?: string;
   lastVisited?: Date;
   email: string;
   phoneNumber?: string;
