@@ -6,10 +6,13 @@ import {
   successResponse,
   failureResponse,
 } from '../modules/common/service';
+import MailerService from '../modules/mailer/service';
 import { IUser } from '../modules/users/model';
+import { IConfirmPasswordUpdate } from '../modules/mailer/model';
 import UserService from '../modules/users/service';
 export class UserController {
   private user_service: UserService = new UserService();
+  private mail_service: MailerService = new MailerService();
 
   public getUser(req: Request, res: Response) {
     if (req.params.id) {
@@ -26,14 +29,14 @@ export class UserController {
     }
   }
 
-  public update_user(req: Request, res: Response) {
-    const { email, last_name, first_name, phone_number = '', gender = '', isDeleted } = req.body;
+  public updateUser(req: Request, res: Response) {
+    const { email, lastName, firstName, phoneNumber = '', gender = '', isDeleted } = req.body;
     if (
-      (req.params.id && (first_name || last_name)) ||
-      last_name ||
-      first_name ||
+      (req.params.id && (firstName || lastName)) ||
+      lastName ||
+      firstName ||
       email ||
-      phone_number ||
+      phoneNumber ||
       gender
     ) {
       const user_filter = { _id: req.params.id };
@@ -49,14 +52,14 @@ export class UserController {
           const userParams: IUser = {
             _id: req.params.id,
             name:
-              first_name || last_name
+              firstName || lastName
                 ? {
-                  first_name: first_name ? first_name : userData.name.firstName,
-                  last_name: first_name ? last_name : userData.name.lastName,
+                  firstName: firstName ? firstName : userData.name.firstName,
+                  lastName: firstName ? lastName : userData.name.lastName,
                 }
                 : userData.name,
             email: email ? email : userData.email,
-            phone_number: phone_number ? phone_number : userData.phoneNumber,
+            phoneNumber: phoneNumber ? phoneNumber : userData.phoneNumber,
             gender: gender ? gender : userData.gender,
             isDeleted: isDeleted ? isDeleted : userData.isDeleted,
             modificationNotes: userData.modificationNotes,
@@ -77,7 +80,7 @@ export class UserController {
     }
   }
 
-  public update_user_password(req: Request, res: Response) {
+  public updateUserPassword(req: Request, res: Response) {
     const { current_password, new_password, confirm_password } = req.body;
 
     if (current_password && new_password && confirm_password) {
@@ -89,20 +92,31 @@ export class UserController {
           if (user_data.password === cryptoJs.AES.encrypt(current_password, process.env.CRYPTO_JS_PASS_SEC).toString()) {
             if (new_password === confirm_password) {
               user_data.password = cryptoJs.AES.encrypt(current_password, process.env.CRYPTO_JS_PASS_SEC).toString();
-              user_data.modification_notes.push({
-                modified_on: new Date(Date.now()),
-                modified_by: null,
-                modification_note: 'User password updated',
+              user_data.modificationNotes.push({
+                modifiedOn: new Date(Date.now()),
+                modifiedBy: null,
+                modificationNote: 'User password updated',
               });
               this.user_service.updateUser(user_data, (err: any) => {
                 if (err) {
                   mongoError(err, res);
                 } else {
-                  successResponse('update user successfully', null, res);
+                  const mail_params: IConfirmPasswordUpdate = {
+                    name: user_data?.name.firstName + ' ' + user_data?.name.lastName,
+                    email: user_data?.email,
+                  };
+                  this.mail_service
+                    .PasswordUpdateNotification(mail_params)
+                    .then((result) => {
+                      return successResponse('User password updated successfully', user_data, res);
+                    })
+                    .catch((err) => {
+                      return failureResponse('Mailer Service error', err, res);
+                    });
                 }
               });
             } else {
-              failureResponse('new password and confirm password does not match', null, res);
+              failureResponse('Invalid current password provided', null, res);
             }
           }
         } else {
@@ -116,7 +130,7 @@ export class UserController {
 
   }
 
-  public delete_user(req: Request, res: Response) {
+  public deleteUser(req: Request, res: Response) {
     if (req.params.id) {
       this.user_service.deleteUser(req.params.id, (err: any, delete_details) => {
         if (err) {

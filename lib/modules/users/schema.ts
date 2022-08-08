@@ -24,7 +24,7 @@ const schema = new Schema(
       default: false,
     },
     lastVisited: { type: Date, default: new Date() },
-    is_deleted: {
+    isDeleted: {
       type: Boolean,
       default: false,
     },
@@ -42,7 +42,7 @@ const schema = new Schema(
     reset_password_expires: {
       type: Date,
     },
-    modification_notes: [ModificationNote],
+    modificationNotes: [ModificationNote],
   });
 
 export default mongoose.model('users', schema);

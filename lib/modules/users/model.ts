@@ -1,8 +1,6 @@
 import { ModificationNote } from '../common/model';
 
 export interface IUser {
-  is_deleted: any;
-  modification_notes: any;
   _id?: string;
   name: {
     firstName: string;

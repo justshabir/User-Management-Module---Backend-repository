@@ -1,10 +1,8 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import dotenv from 'dotenv';
-import { IChangePassword } from './model';
-import { CONFIRM_ACCOUNT_SUBJECT, PASSWORD_RESET_HELP } from '../../utils/constants';
-import confirm_account from '../../templates/confirm_account';
-import { ClientBaseUrl } from '../../config/app';
-import forgot_password from '../../templates/forgot_password';
+import { IConfirmPasswordUpdate } from './model';
+import { CONFIRM_PASSWORD_UPDATE_SUBJECT } from '../../utils/constant';
+import confirmPasswordUpdate from '../../templates/confirmPasswordUpdate';
 
 dotenv.config();
 
@@ -24,40 +22,17 @@ const transport: Transporter = nodemailer.createTransport({
 export default class MailerService {
   private transporter: Transporter = transport;
   private user: string = process.env.GMAIL_USER;
-  private client_base_url = ClientBaseUrl;
 
-  public sendAccountActivationRequest(params: IConfirmationMail) {
-    return new Promise(async (resolve, reject) => {
-      const html = confirm_account(params.confirmationCode, this.client_base_url, params.name);
+  public PasswordUpdateNotification(params: IConfirmPasswordUpdate) {
+    return new Promise((resolve, reject) => {
+      const html = confirmPasswordUpdate(params.name);
       try {
-        await this.transporter.verify();
+        this.transporter.verify();
         this.transporter.sendMail(
           {
             from: this.user,
             to: params.email,
-            subject: CONFIRM_ACCOUNT_SUBJECT,
-            html: html,
-          },
-          (error) => {
-            if (error) reject(error);
-            else resolve(true);
-          }
-        );
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-  public sendPasswordReset(params: IForgotPassword) {
-    return new Promise(async (resolve, reject) => {
-      const html = forgot_password(params.token, this.client_base_url, params.name);
-      try {
-        await this.transporter.verify();
-        this.transporter.sendMail(
-          {
-            from: this.user,
-            to: params.email,
-            subject: PASSWORD_RESET_HELP,
+            subject: CONFIRM_PASSWORD_UPDATE_SUBJECT,
             html: html,
           },
           (error) => {
