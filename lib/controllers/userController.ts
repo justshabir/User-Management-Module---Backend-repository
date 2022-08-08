@@ -86,9 +86,9 @@ export class UserController {
         if (err) {
           mongoError(err, res);
         } else if (user_data) {
-          if (user_data.password === cryptoJs.SHA256(current_password).toString()) {
+          if (user_data.password === cryptoJs.AES.encrypt(current_password, process.env.CRYPTO_JS_PASS_SEC).toString()) {
             if (new_password === confirm_password) {
-              user_data.password = cryptoJs.SHA256(new_password).toString();
+              user_data.password = cryptoJs.AES.encrypt(current_password, process.env.CRYPTO_JS_PASS_SEC).toString();
               user_data.modification_notes.push({
                 modified_on: new Date(Date.now()),
                 modified_by: null,
