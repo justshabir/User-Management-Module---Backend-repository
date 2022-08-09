@@ -1,23 +1,27 @@
 import { Request, Response } from 'express';
+import cryptoJs from 'crypto-js';
 import {
   insufficientParameters,
   mongoError,
   successResponse,
   failureResponse,
 } from '../modules/common/service';
+import MailerService from '../modules/mailer/service';
 import { IUser } from '../modules/users/model';
+import { IConfirmPasswordUpdate } from '../modules/mailer/model';
 import UserService from '../modules/users/service';
 export class UserController {
-  private user_service: UserService = new UserService();
+  private userService: UserService = new UserService();
+  private mailService: MailerService = new MailerService();
 
   public getUser(req: Request, res: Response) {
     if (req.params.id) {
-      const user_filter = { _id: req.params.id };
-      this.user_service.filterUser(user_filter, (err: any, userData: IUser) => {
+      const userFilter = { _id: req.params.id };
+      this.userService.filterUser(userFilter, (err: any, userData: IUser) => {
         if (err) {
           mongoError(err, res);
         } else {
-          successResponse('get user successfull', userData, res);
+          successResponse('get user successfully', userData, res);
         }
       });
     } else {
@@ -26,17 +30,19 @@ export class UserController {
   }
 
   public updateUser(req: Request, res: Response) {
-    const { email, lastName, firstName, phoneNumber = '', gender = '', isDeleted } = req.body;
+    const { lastName, firstName, phoneNumber = '', gender = '', isDeleted, platformLanguage, profession, country } = req.body;
     if (
       (req.params.id && (firstName || lastName)) ||
       lastName ||
       firstName ||
-      email ||
       phoneNumber ||
-      gender
+      gender ||
+      country ||
+      platformLanguage ||
+      profession
     ) {
       const user_filter = { _id: req.params.id };
-      this.user_service.filterUser(user_filter, (err: any, userData: IUser) => {
+      this.userService.filterUser(user_filter, (err: any, userData: IUser) => {
         if (err) {
           mongoError(err, res);
         } else if (userData) {
@@ -50,21 +56,23 @@ export class UserController {
             name:
               firstName || lastName
                 ? {
-                    firstName: firstName ? firstName : userData.name.firstName,
-                    lastName: firstName ? lastName : userData.name.lastName,
-                  }
+                  firstName: firstName ? firstName : userData.name.firstName,
+                  lastName: firstName ? lastName : userData.name.lastName,
+                }
                 : userData.name,
-            email: email ? email : userData.email,
             phoneNumber: phoneNumber ? phoneNumber : userData.phoneNumber,
             gender: gender ? gender : userData.gender,
             isDeleted: isDeleted ? isDeleted : userData.isDeleted,
             modificationNotes: userData.modificationNotes,
+            country: country ? country : userData.country,
+            profession: profession ? profession : userData.profession,
+            platformLanguage: platformLanguage ? platformLanguage : userData.platformLanguage
           };
-          this.user_service.updateUser(userParams, (err: any) => {
+          this.userService.updateUser(userParams, (err: any) => {
             if (err) {
               mongoError(err, res);
             } else {
-              successResponse('update user successfull', null, res);
+              successResponse('update user successfully', null, res);
             }
           });
         } else {
@@ -75,13 +83,64 @@ export class UserController {
       insufficientParameters(res);
     }
   }
-  public deleteUserr(req: Request, res: Response) {
-    if (req.params.id) {
-      this.user_service.deleteUser(req.params.id, (err: any, delete_details) => {
+
+  public updateUserPassword(req: Request, res: Response) {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (currentPassword && newPassword && confirmPassword) {
+      const userFilter = { _id: req.params.id };
+      this.userService.filterUser(userFilter, (err: any, userData: IUser) => {
         if (err) {
           mongoError(err, res);
-        } else if (delete_details.deletedCount !== 0) {
-          successResponse('delete user successfull', null, res);
+        } else if (userData) {
+          if (userData.password === cryptoJs.AES.encrypt(currentPassword, process.env.CRYPTO_JS_PASS_SEC).toString()) {
+            if (newPassword === confirmPassword) {
+              userData.password = cryptoJs.AES.encrypt(currentPassword, process.env.CRYPTO_JS_PASS_SEC).toString();
+              userData.modificationNotes.push({
+                modifiedOn: new Date(Date.now()),
+                modifiedBy: null,
+                modificationNote: 'User password updated',
+              });
+              this.userService.updateUser(userData, (err: any) => {
+                if (err) {
+                  mongoError(err, res);
+                } else {
+                  const mailParams: IConfirmPasswordUpdate = {
+                    name: userData?.name.firstName + ' ' + userData?.name.lastName,
+                    email: userData?.email,
+                  };
+                  this.mailService
+                    .PasswordUpdateNotification(mailParams)
+                    .then((result) => {
+                      return successResponse('User password updated successfully', userData, res);
+                    })
+                    .catch((err) => {
+                      return failureResponse('Mailer Service error', err, res);
+                    });
+                }
+              });
+            } else {
+              failureResponse('Invalid current password provided', null, res);
+            }
+          }
+        } else {
+          failureResponse('invalid user', null, res);
+        }
+      });
+    } else {
+      // error response if some fields are missing in request body
+      return insufficientParameters(res);
+    }
+
+  }
+
+  public deleteUser(req: Request, res: Response) {
+    if (req.params.id) {
+      this.userService.deleteUser(req.params.id, (err: any, deleteDetails) => {
+        if (err) {
+          mongoError(err, res);
+        } else if (deleteDetails.deletedCount !== 0) {
+          successResponse('delete user successfully', null, res);
         } else {
           failureResponse('invalid user', null, res);
         }
