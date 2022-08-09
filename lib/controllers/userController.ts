@@ -11,13 +11,13 @@ import { IUser } from '../modules/users/model';
 import { IConfirmPasswordUpdate } from '../modules/mailer/model';
 import UserService from '../modules/users/service';
 export class UserController {
-  private user_service: UserService = new UserService();
-  private mail_service: MailerService = new MailerService();
+  private userService: UserService = new UserService();
+  private mailService: MailerService = new MailerService();
 
   public getUser(req: Request, res: Response) {
     if (req.params.id) {
-      const user_filter = { _id: req.params.id };
-      this.user_service.filterUser(user_filter, (err: any, userData: IUser) => {
+      const userFilter = { _id: req.params.id };
+      this.userService.filterUser(userFilter, (err: any, userData: IUser) => {
         if (err) {
           mongoError(err, res);
         } else {
@@ -30,17 +30,19 @@ export class UserController {
   }
 
   public updateUser(req: Request, res: Response) {
-    const { email, lastName, firstName, phoneNumber = '', gender = '', isDeleted } = req.body;
+    const { lastName, firstName, phoneNumber = '', gender = '', isDeleted, platformLanguage, profession, country } = req.body;
     if (
       (req.params.id && (firstName || lastName)) ||
       lastName ||
       firstName ||
-      email ||
       phoneNumber ||
-      gender
+      gender ||
+      country ||
+      platformLanguage ||
+      profession
     ) {
       const user_filter = { _id: req.params.id };
-      this.user_service.filterUser(user_filter, (err: any, userData: IUser) => {
+      this.userService.filterUser(user_filter, (err: any, userData: IUser) => {
         if (err) {
           mongoError(err, res);
         } else if (userData) {
@@ -58,13 +60,15 @@ export class UserController {
                   lastName: firstName ? lastName : userData.name.lastName,
                 }
                 : userData.name,
-            email: email ? email : userData.email,
             phoneNumber: phoneNumber ? phoneNumber : userData.phoneNumber,
             gender: gender ? gender : userData.gender,
             isDeleted: isDeleted ? isDeleted : userData.isDeleted,
             modificationNotes: userData.modificationNotes,
+            country: country ? country : userData.country,
+            profession: profession ? profession : userData.profession,
+            platformLanguage: platformLanguage ? platformLanguage : userData.platformLanguage
           };
-          this.user_service.updateUser(userParams, (err: any) => {
+          this.userService.updateUser(userParams, (err: any) => {
             if (err) {
               mongoError(err, res);
             } else {
@@ -81,34 +85,34 @@ export class UserController {
   }
 
   public updateUserPassword(req: Request, res: Response) {
-    const { current_password, new_password, confirm_password } = req.body;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
 
-    if (current_password && new_password && confirm_password) {
-      const user_filter = { _id: req.params.id };
-      this.user_service.filterUser(user_filter, (err: any, user_data: IUser) => {
+    if (currentPassword && newPassword && confirmPassword) {
+      const userFilter = { _id: req.params.id };
+      this.userService.filterUser(userFilter, (err: any, userData: IUser) => {
         if (err) {
           mongoError(err, res);
-        } else if (user_data) {
-          if (user_data.password === cryptoJs.AES.encrypt(current_password, process.env.CRYPTO_JS_PASS_SEC).toString()) {
-            if (new_password === confirm_password) {
-              user_data.password = cryptoJs.AES.encrypt(current_password, process.env.CRYPTO_JS_PASS_SEC).toString();
-              user_data.modificationNotes.push({
+        } else if (userData) {
+          if (userData.password === cryptoJs.AES.encrypt(currentPassword, process.env.CRYPTO_JS_PASS_SEC).toString()) {
+            if (newPassword === confirmPassword) {
+              userData.password = cryptoJs.AES.encrypt(currentPassword, process.env.CRYPTO_JS_PASS_SEC).toString();
+              userData.modificationNotes.push({
                 modifiedOn: new Date(Date.now()),
                 modifiedBy: null,
                 modificationNote: 'User password updated',
               });
-              this.user_service.updateUser(user_data, (err: any) => {
+              this.userService.updateUser(userData, (err: any) => {
                 if (err) {
                   mongoError(err, res);
                 } else {
-                  const mail_params: IConfirmPasswordUpdate = {
-                    name: user_data?.name.firstName + ' ' + user_data?.name.lastName,
-                    email: user_data?.email,
+                  const mailParams: IConfirmPasswordUpdate = {
+                    name: userData?.name.firstName + ' ' + userData?.name.lastName,
+                    email: userData?.email,
                   };
-                  this.mail_service
-                    .PasswordUpdateNotification(mail_params)
+                  this.mailService
+                    .PasswordUpdateNotification(mailParams)
                     .then((result) => {
-                      return successResponse('User password updated successfully', user_data, res);
+                      return successResponse('User password updated successfully', userData, res);
                     })
                     .catch((err) => {
                       return failureResponse('Mailer Service error', err, res);
@@ -132,10 +136,10 @@ export class UserController {
 
   public deleteUser(req: Request, res: Response) {
     if (req.params.id) {
-      this.user_service.deleteUser(req.params.id, (err: any, delete_details) => {
+      this.userService.deleteUser(req.params.id, (err: any, deleteDetails) => {
         if (err) {
           mongoError(err, res);
-        } else if (delete_details.deletedCount !== 0) {
+        } else if (deleteDetails.deletedCount !== 0) {
           successResponse('delete user successfully', null, res);
         } else {
           failureResponse('invalid user', null, res);

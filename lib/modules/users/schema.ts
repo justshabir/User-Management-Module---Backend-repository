@@ -16,6 +16,18 @@ const schema = new Schema(
       required: [true, 'email required'],
       unique: [true, 'email already registered'],
     },
+    country: {
+      type: String,
+      default: null
+    },
+    platformLanguage: {
+      type: String,
+      default: null
+    },
+    profession: {
+      type: String,
+      default: null
+    },
     password: { type: String, select: false },
     phoneNumber: String,
     gender: String,
