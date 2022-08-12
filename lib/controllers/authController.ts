@@ -8,9 +8,9 @@ import { IUser } from 'modules/users/model';
 
 export class AuthController {
   /** Create new instances of needed services here example shown below */
-  private user_service: UserService = new UserService();
+  private userService: UserService = new UserService();
 
-  public create_user(req: Request, res: Response) {
+  public createUser(req: Request, res: Response) {
     return successResponse('success......', null, res); // replace this with appropriate logic
     // const { password, email, lastName, firstName, phoneNumber = '', gender = '' } = req.body;
 
@@ -21,25 +21,20 @@ export class AuthController {
      */
   }
 
-  public login_user(req: Request, res: Response, next: NextFunction) {
+  public loginUser(req: Request, res: Response, next: NextFunction) {
     /**
      * Make use of Passport local strategy here to validate user's credentials and session
      */
   }
 
-  public activate_account(req: Request, res: Response) {
+  public activateAccount(req: Request, res: Response) {
     /**
      * Use this session to validate and activate user's account
      *  based on the confirmation code sent to their mail upon account registration
      */
   }
-  public logout_user(req: any, res: Response) {
-      /**
-     * Write the neccessary logic to logout a user
-     * It is important to update the `lastvisited`
-     * property on the user's object to the current date
-     */
-    this.user_service.filterUser({_id: req?.user.id}, (err: any, user_data:any)=>{
+  public logoutUser(req: any, res: Response) {
+    this.userService.filterUser({_id: req?.user.id}, (err: any, user_data:any)=>{
       if (user_data){
         user_data.lastVisited = new Date();
         user_data.save((err:any, updated_user_data: IUser)=>{
@@ -54,10 +49,10 @@ export class AuthController {
    * @returns
    * The following methods perform authentication using user's social media account
    */
-  public linked_in() {
+  public linkedIn() {
     return passport.authenticate('linkedin');
   }
-  public linked_in_callback(req: Request, res: Response, next: NextFunction) {
+  public linkedInCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('linkedin', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
@@ -76,7 +71,7 @@ export class AuthController {
   public google() {
     return passport.authenticate('google', { scope: ['email', 'profile'] });
   }
-  public google_callback(req: Request, res: Response, next: NextFunction) {
+  public googleCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('google', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
@@ -111,7 +106,7 @@ export class AuthController {
       });
     })(req, res, next);
   }
-  public login_success(req: any, res: Response) {
+  public loginSuccess(req: any, res: Response) {
     if (req?.user) {
       const accessToken = authMiddleWare.createToken(req.user);
       return successResponse('Successful', { user: req.user, accessToken }, res);
