@@ -5,11 +5,11 @@ import MicrosoftStrategy from 'passport-microsoft';
 import LocalStrategy from 'passport-local';
 import dotenv from 'dotenv';
 import { IUser } from '../modules/users/model';
-import user_service from '../modules/users/service';
+import userService from '../modules/users/service';
 import { accountSourceEnum, accountStatusEnum } from '../utils/enums';
 dotenv.config();
 
-const UserService = new user_service();
+const UserService = new userService();
 
 passport.use(
   new LocalStrategy.Strategy(async function (username: string, password: string, done: any) {
@@ -174,8 +174,8 @@ passport.serializeUser((user: IUser, done: any) => {
 });
 
 passport.deserializeUser(async (id: number, done: any) => {
-  const user_filter = { _id: id };
-  UserService.filterUser(user_filter, (err: any, user: IUser) => {
+  const userFilter = { _id: id };
+  UserService.filterUser(userFilter, (err: any, user: IUser) => {
     if (err) {
       console.log('Passport serialization error', err);
     }

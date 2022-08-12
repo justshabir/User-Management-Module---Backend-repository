@@ -31,6 +31,7 @@ const schema = new Schema(
     password: { type: String, select: false },
     phoneNumber: String,
     gender: String,
+
     isAdmin: {
       type: Boolean,
       default: false,
@@ -47,7 +48,7 @@ const schema = new Schema(
     },
     status: { type: String, enum: ['Pending', 'Active', 'Suspended'], default: 'Pending' },
     confirmationCode: { type: String },
-    profilePhoto: { type: String },
+    profilePhoto: { type: Schema.Types.ObjectId, ref: 'Image' },
     source: {
       type: String,
       enum: ['local', 'google', 'linkedin', 'microsoft'],

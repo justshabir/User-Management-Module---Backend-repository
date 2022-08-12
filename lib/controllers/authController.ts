@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
-import { successResponse, failureResponse } from '../modules/common/service';
+import CommonService from '../modules/common/service';
 import authMiddleWare from '../middlewares/auth';
 import { ClientBaseUrl } from '../config/app';
 
 export class AuthController {
   /** Create new instances of needed services here example shown below */
-  // private user_service: UserService = new UserService();
+  // private userService: UserService = new UserService();
 
-  public create_user(req: Request, res: Response) {
-    return successResponse('success......', null, res); // replace this with appropriate logic
+  public createUser(req: Request, res: Response) {
+    return CommonService.successResponse('success......', null, res); // replace this with appropriate logic
     // const { password, email, lastName, firstName, phoneNumber = '', gender = '' } = req.body;
     /**
      * this check whether all required fields were send through the request
@@ -18,20 +18,20 @@ export class AuthController {
      */
   }
 
-  public login_user(req: Request, res: Response, next: NextFunction) {
+  public loginUser(req: Request, res: Response, next: NextFunction) {
     /**
      * Make use of Passport local strategy here to validate user's credentials and session
      */
   }
 
-  public activate_account(req: Request, res: Response) {
+  public activateAccount(req: Request, res: Response) {
     /**
      * Use this session to validate and activate user's account
      *  based on the confirmation code sent to their mail upon account registration
      */
   }
-  public logout_user(req: any, res: Response) {
-    return successResponse('success......', null, res); // replace this with appropriate logic
+  public logOutUser(req: any, res: Response) {
+    return CommonService.successResponse('success......', null, res); // replace this with appropriate logic
     /**
      * Write the neccessary logic to logout a user
      * It is important to update the `lastvisited`
@@ -47,7 +47,7 @@ export class AuthController {
   public linked_in() {
     return passport.authenticate('linkedin');
   }
-  public linked_in_callback(req: Request, res: Response, next: NextFunction) {
+  public linkedInCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('linkedin', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
@@ -66,7 +66,7 @@ export class AuthController {
   public google() {
     return passport.authenticate('google', { scope: ['email', 'profile'] });
   }
-  public google_callback(req: Request, res: Response, next: NextFunction) {
+  public googleCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('google', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
@@ -85,7 +85,7 @@ export class AuthController {
   public microsoft() {
     return passport.authenticate('microsoft', { prompt: 'select_account' });
   }
-  public microsoft_callback(req: Request, res: Response, next: NextFunction) {
+  public microsoftCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('microsoft', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
@@ -101,12 +101,16 @@ export class AuthController {
       });
     })(req, res, next);
   }
-  public login_success(req: any, res: Response) {
+  public loginSuccess(req: any, res: Response) {
     if (req?.user) {
       const accessToken = authMiddleWare.createToken(req.user);
-      return successResponse('Successful', { user: req.user, accessToken }, res);
+      return CommonService.successResponse('Successful', { user: req.user, accessToken }, res);
     } else {
-      return failureResponse('Login Failed. Unable to obtain access token', null, res);
+      return CommonService.failureResponse(
+        'Login Failed. Unable to obtain access token',
+        null,
+        res
+      );
     }
   }
 }

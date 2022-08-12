@@ -1,11 +1,7 @@
 import { Request, Response } from 'express';
+
 import cryptoJs from 'crypto-js';
-import {
-  insufficientParameters,
-  mongoError,
-  successResponse,
-  failureResponse,
-} from '../modules/common/service';
+import CommonService from '../modules/common/service';
 import MailerService from '../modules/mailer/service';
 import { IUser } from '../modules/users/model';
 import { IConfirmPasswordUpdate } from '../modules/mailer/model';
@@ -19,20 +15,31 @@ export class UserController {
       const userFilter = { _id: req.params.id };
       this.userService.filterUser(userFilter, (err: any, userData: IUser) => {
         if (err) {
-          mongoError(err, res);
+          CommonService.mongoError(err, res);
         } else {
-          successResponse('get user successfully', userData, res);
+          CommonService.successResponse('get user successfull', userData, res);
         }
       });
     } else {
-      insufficientParameters(res);
+      CommonService.insufficientParameters(res);
     }
   }
-
   public updateUser(req: Request, res: Response) {
-    const { lastName, firstName, phoneNumber = '', gender = '', isDeleted, platformLanguage, profession, country } = req.body;
+    const {
+      lastName,
+      firstName,
+      phoneNumber = '',
+      gender = '',
+      isDeleted,
+      platformLanguage,
+      profession,
+      country,
+      profilePhoto = '',
+    } = req.body;
+    //no need for req.params.id we will use joi validator
     if (
-      (req.params.id && (firstName || lastName)) ||
+      firstName ||
+      lastName ||
       lastName ||
       firstName ||
       phoneNumber ||
@@ -41,10 +48,10 @@ export class UserController {
       platformLanguage ||
       profession
     ) {
-      const user_filter = { _id: req.params.id };
-      this.userService.filterUser(user_filter, (err: any, userData: IUser) => {
+      const userFilter = { _id: req.params.id };
+      this.userService.filterUser(userFilter, (err: any, userData: IUser) => {
         if (err) {
-          mongoError(err, res);
+          CommonService.mongoError(err, res);
         } else if (userData) {
           userData.modificationNotes.push({
             modifiedOn: new Date(Date.now()),
@@ -56,9 +63,9 @@ export class UserController {
             name:
               firstName || lastName
                 ? {
-                  firstName: firstName ? firstName : userData.name.firstName,
-                  lastName: firstName ? lastName : userData.name.lastName,
-                }
+                    firstName: firstName ? firstName : userData.name.firstName,
+                    lastName: firstName ? lastName : userData.name.lastName,
+                  }
                 : userData.name,
             phoneNumber: phoneNumber ? phoneNumber : userData.phoneNumber,
             gender: gender ? gender : userData.gender,
@@ -66,24 +73,28 @@ export class UserController {
             modificationNotes: userData.modificationNotes,
             country: country ? country : userData.country,
             profession: profession ? profession : userData.profession,
-            platformLanguage: platformLanguage ? platformLanguage : userData.platformLanguage
+            platformLanguage: platformLanguage ? platformLanguage : userData.platformLanguage,
+            profilePhoto: profilePhoto ? profilePhoto : userData.profilePhoto,
           };
-          this.userService.updateUser(userParams, (err: any) => {
+          this.userService.updateUser(userParams, (err: any, updatedUserData: IUser) => {
             if (err) {
-              mongoError(err, res);
+              CommonService.mongoError(err, res);
             } else {
-              successResponse('update user successfully', null, res);
+              CommonService.successResponse(
+                'Profile updated successfully',
+                { id: updatedUserData._id },
+                res
+              );
             }
           });
         } else {
-          failureResponse('invalid user', null, res);
+          CommonService.failureResponse('invalid user', null, res);
         }
       });
     } else {
-      insufficientParameters(res);
+      CommonService.insufficientParameters(res);
     }
   }
-
   public updateUserPassword(req: Request, res: Response) {
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
@@ -91,11 +102,17 @@ export class UserController {
       const userFilter = { _id: req.params.id };
       this.userService.filterUser(userFilter, (err: any, userData: IUser) => {
         if (err) {
-          mongoError(err, res);
+          CommonService.mongoError(err, res);
         } else if (userData) {
-          if (userData.password === cryptoJs.AES.encrypt(currentPassword, process.env.CRYPTO_JS_PASS_SEC).toString()) {
+          if (
+            userData.password ===
+            cryptoJs.AES.encrypt(currentPassword, process.env.CRYPTO_JS_PASS_SEC).toString()
+          ) {
             if (newPassword === confirmPassword) {
-              userData.password = cryptoJs.AES.encrypt(currentPassword, process.env.CRYPTO_JS_PASS_SEC).toString();
+              userData.password = cryptoJs.AES.encrypt(
+                currentPassword,
+                process.env.CRYPTO_JS_PASS_SEC
+              ).toString();
               userData.modificationNotes.push({
                 modifiedOn: new Date(Date.now()),
                 modifiedBy: null,
@@ -103,7 +120,7 @@ export class UserController {
               });
               this.userService.updateUser(userData, (err: any) => {
                 if (err) {
-                  mongoError(err, res);
+                  CommonService.mongoError(err, res);
                 } else {
                   const mailParams: IConfirmPasswordUpdate = {
                     name: userData?.name.firstName + ' ' + userData?.name.lastName,
@@ -112,41 +129,44 @@ export class UserController {
                   this.mailService
                     .PasswordUpdateNotification(mailParams)
                     .then((result) => {
-                      return successResponse('User password updated successfully', userData, res);
+                      return CommonService.successResponse(
+                        'User password updated successfully',
+                        userData,
+                        res
+                      );
                     })
                     .catch((err) => {
-                      return failureResponse('Mailer Service error', err, res);
+                      return CommonService.failureResponse('Mailer Service error', err, res);
                     });
                 }
               });
             } else {
-              failureResponse('Invalid current password provided', null, res);
+              CommonService.failureResponse('Invalid current password provided', null, res);
             }
           }
         } else {
-          failureResponse('invalid user', null, res);
+          CommonService.failureResponse('invalid user', null, res);
         }
       });
     } else {
       // error response if some fields are missing in request body
-      return insufficientParameters(res);
+      return CommonService.insufficientParameters(res);
     }
-
   }
 
   public deleteUser(req: Request, res: Response) {
     if (req.params.id) {
-      this.userService.deleteUser(req.params.id, (err: any, deleteDetails) => {
+      this.userService.deleteUser(req.params.id, (err: any, delete_details) => {
         if (err) {
-          mongoError(err, res);
-        } else if (deleteDetails.deletedCount !== 0) {
-          successResponse('delete user successfully', null, res);
+          CommonService.mongoError(err, res);
+        } else if (delete_details.deletedCount !== 0) {
+          CommonService.successResponse('delete user successfull', null, res);
         } else {
-          failureResponse('invalid user', null, res);
+          CommonService.failureResponse('invalid user', null, res);
         }
       });
     } else {
-      insufficientParameters(res);
+      CommonService.insufficientParameters(res);
     }
   }
 }
