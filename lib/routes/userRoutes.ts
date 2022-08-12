@@ -11,8 +11,13 @@ export class UserRoutes {
     app.put('/api/user/:id', (req: Request, res: Response) => {
       this.userController.updateUser(req, res);
     });
+
+    app.put('/api/user/:id/passwordupdate', (req: Request, res: Response) => {
+      this.userController.updateUserPassword(req, res);
+    });
+
     app.delete('/api/user/:id', (req: Request, res: Response) => {
-      this.userController.deleteUserr(req, res);
+      this.userController.deleteUser(req, res);
     });
   }
 }
