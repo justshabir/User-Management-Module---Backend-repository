@@ -10,14 +10,15 @@ export const ModificationNote = {
   modificationNote: String,
 };
 
-export enum response_status_codes {
+export enum responseStatusCodes {
   success = 200,
   created = 201,
-  noContent = 204,
+  no_content = 204,
   modified = 304,
   bad_request = 400,
   unauthorized = 401,
   forbidden = 403,
-  iinternalServerError = 500,
-  notImplemented = 501,
+  unprocessable = 422,
+  internal_server_error = 500,
+  not_implemented = 501,
 }
