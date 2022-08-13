@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
-import { successResponse, failureResponse } from '../modules/common/service';
+import  CommonService  from '../modules/common/service';
 import authMiddleWare from '../middlewares/auth';
 import { ClientBaseUrl } from '../config/app';
 import UserService from 'modules/users/service';
@@ -11,7 +11,7 @@ export class AuthController {
   private userService: UserService = new UserService();
 
   public createUser(req: Request, res: Response) {
-    return successResponse('success......', null, res); // replace this with appropriate logic
+    return CommonService.successResponse('success......', null, res); // replace this with appropriate logic
     // const { password, email, lastName, firstName, phoneNumber = '', gender = '' } = req.body;
 
     /**
@@ -38,9 +38,9 @@ export class AuthController {
       if (user_data){
         user_data.lastVisited = new Date();
         user_data.save((err:any, updated_user_data: IUser)=>{
-          return successResponse('Logout successfully', updated_user_data, res)
+          return CommonService.successResponse('Logout successfully', updated_user_data, res)
         })
-      } else return failureResponse('Invalid Session', err, res);
+      } else return CommonService.failureResponse('Invalid Session', err, res);
     })
   }
 
@@ -90,7 +90,7 @@ export class AuthController {
   public microsoft() {
     return passport.authenticate('microsoft', { prompt: 'select_account' });
   }
-  public microsoft_callback(req: Request, res: Response, next: NextFunction) {
+  public microsoftCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('microsoft', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
@@ -109,9 +109,9 @@ export class AuthController {
   public loginSuccess(req: any, res: Response) {
     if (req?.user) {
       const accessToken = authMiddleWare.createToken(req.user);
-      return successResponse('Successful', { user: req.user, accessToken }, res);
+      return CommonService.successResponse('Successful', { user: req.user, accessToken }, res);
     } else {
-      return failureResponse('Login Failed. Unable to obtain access token', null, res);
+      return CommonService.failureResponse('Login Failed. Unable to obtain access token', null, res);
     }
   }
 }

@@ -24,10 +24,7 @@ export interface IUser {
   resetPasswordToken?: string;
   resetPasswordExpires?: number;
   modificationNotes: ModificationNote[];
-<<<<<<< HEAD
   referrals: any[];
   refId?: string;
 }
-=======
-}
->>>>>>> ae11590e379ad8e947b39d9a24eb456dccf9c273
+

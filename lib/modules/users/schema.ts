@@ -3,7 +3,7 @@ import { ModificationNote } from '../common/model';
 const { Schema } = mongoose;
 
 
-export const referralSchema = new Schema({
+const referralSchema = new Schema({
   user:{
     type: Schema.Types.ObjectId,
     ref: 'users'
