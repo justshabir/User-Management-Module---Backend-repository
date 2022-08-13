@@ -62,7 +62,8 @@ const schema = new Schema(
     modificationNotes: [ModificationNote],
     refId: {
       type: String,
-      unique: true,
+      required: [true, 'referral ID required'],
+      require: true,
     },
     referrals: [
       {

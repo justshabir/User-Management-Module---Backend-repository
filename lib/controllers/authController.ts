@@ -10,7 +10,7 @@ import cryptoJs from 'crypto-js';
 import { IConfirmationMail } from '../modules/mailer/model';
 import jwt from 'jsonwebtoken';
 import { accountStatusEnum } from '../utils/enums';
-
+import { uuid } from 'uuidv4';
 export class AuthController {
   private userService: UserService = new UserService();
   private mailService: MailerService = new MailerService();
@@ -45,6 +45,7 @@ export class AuthController {
         email: email,
         password: hashedPassword,
         confirmationCode: token,
+        refId: uuid(),
         modificationNotes: [
           {
             modifiedOn: new Date(Date.now()),

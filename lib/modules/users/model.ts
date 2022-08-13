@@ -24,5 +24,5 @@ export interface IUser {
   resetPasswordExpires?: number;
   modificationNotes: ModificationNote[];
   referrals?: string[];
-  refId?: string;
+  refId: string;
 }

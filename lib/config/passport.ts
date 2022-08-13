@@ -71,7 +71,8 @@ passport.use(
             email: email,
             source: 'google',
             status: 'Active',
-            profilePhoto: profilePhoto,
+            refId: id,
+            profilePhoto: '',
             modificationNotes: [
               {
                 modifiedOn: new Date(Date.now()),
@@ -104,6 +105,7 @@ passport.use(
       scope: ['r_emailaddress', 'r_liteprofile'],
     },
     async function (accessToken, refreshToken, profile, done) {
+      const id = profile.id;
       const email = profile.emails[0]?.value;
       const displayName = profile.displayName;
       const familyName = profile.name?.familyName;
@@ -120,7 +122,8 @@ passport.use(
             email: email,
             source: accountSourceEnum.LINKEDIN,
             status: accountStatusEnum.ACTIVE,
-            profilePhoto: profilePhoto,
+            profilePhoto: '',
+            refId: id,
             modificationNotes: [
               {
                 modifiedOn: new Date(Date.now()),
@@ -153,6 +156,7 @@ passport.use(
       scope: ['user.read'],
     },
     async function (accessToken, refreshToken, profile, done) {
+      const id = profile.id;
       const email = profile.emails[0]?.value;
       const displayName = profile.displayName;
       const familyName = profile.name?.familyName;
@@ -167,6 +171,7 @@ passport.use(
             email: email,
             source: accountSourceEnum.MICROSOFT,
             status: accountStatusEnum.ACTIVE,
+            refId: id,
             profilePhoto: '',
             modificationNotes: [
               {

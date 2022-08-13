@@ -68,6 +68,7 @@ export class UserController {
                   }
                 : userData.name,
             phoneNumber: phoneNumber ? phoneNumber : userData.phoneNumber,
+            refId: userData.refId,
             gender: gender ? gender : userData.gender,
             isDeleted: isDeleted ? isDeleted : userData.isDeleted,
             modificationNotes: userData.modificationNotes,
