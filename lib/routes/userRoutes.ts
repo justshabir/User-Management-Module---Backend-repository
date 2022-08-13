@@ -14,18 +14,14 @@ export class UserRoutes {
     );
     app.put(
       '/api/user/:id/password-update',
-      AuthMiddleWare.verifyTokenAndAuthorization,
+      AuthMiddleWare.verifyToken,
       (req: Request, res: Response) => {
         this.userController.updateUserPassword(req, res);
       }
     );
-    app.put(
-      '/api/user/:id',
-      AuthMiddleWare.verifyTokenAndAuthorization,
-      (req: Request, res: Response) => {
-        this.userController.updateUser(req, res);
-      }
-    );
+    app.put('/api/user/:id', AuthMiddleWare.verifyToken, (req: Request, res: Response) => {
+      this.userController.updateUser(req, res);
+    });
 
     app.delete(
       '/api/user/:id',

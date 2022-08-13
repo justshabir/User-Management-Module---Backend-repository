@@ -7,8 +7,8 @@ export class CommonRoutes {
      */
     app.all('*', (req: Request, res: Response) => {
       res.status(404).send({
-        error: true,
-        message: 'Please check your URL',
+        STATUS: 'ERROR',
+        MESSAGE: 'Please check your URL',
       });
     });
   }
