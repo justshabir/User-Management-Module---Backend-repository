@@ -7,12 +7,19 @@ export default class UserService {
     _session.save(callback);
   }
   public filterUser(query: any, callback: any, selectPassword?: boolean) {
-    if (selectPassword) Users.findOne(query, callback).select('+password');
-    else Users.findOne(query, callback);
+    if (selectPassword) Users.findOne(query, callback).select('+password').populate('profilePhoto');
+    else Users.findOne(query, callback).populate('profilePhoto');
   }
   public updateUser(userParams: IUser, callback: any) {
     const query = { _id: userParams._id };
-    Users.findOneAndUpdate(query, userParams, callback);
+    Users.findOneAndUpdate(
+      query,
+      userParams,
+      {
+        new: true,
+      },
+      callback
+    );
   }
 
   public deleteUser(_id: string, callback?: any) {

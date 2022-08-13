@@ -24,13 +24,12 @@ export class UserController {
       CommonService.insufficientParameters(res);
     }
   }
-  public updateUser(req: Request, res: Response) {
+  public updateUser(req: Request | any, res: Response) {
     const {
       lastName,
       firstName,
       phoneNumber = '',
       gender = '',
-      isDeleted,
       platformLanguage,
       profession,
       country,
@@ -46,7 +45,8 @@ export class UserController {
       gender ||
       country ||
       platformLanguage ||
-      profession
+      profession ||
+      profilePhoto
     ) {
       const userFilter = { _id: req.params.id };
       this.userService.filterUser(userFilter, (err: any, userData: IUser) => {
@@ -54,9 +54,9 @@ export class UserController {
           CommonService.mongoError(err, res);
         } else if (userData) {
           userData.modificationNotes.push({
-            modifiedOn: new Date(Date.now()),
-            modifiedBy: null,
-            modificationNote: 'User data updated',
+            modifiedOn: new Date(),
+            modifiedBy: req.user.id,
+            modificationNote: 'User password updated',
           });
           const userParams: IUser = {
             _id: req.params.id,
@@ -70,22 +70,18 @@ export class UserController {
             phoneNumber: phoneNumber ? phoneNumber : userData.phoneNumber,
             refId: userData.refId,
             gender: gender ? gender : userData.gender,
-            isDeleted: isDeleted ? isDeleted : userData.isDeleted,
             modificationNotes: userData.modificationNotes,
             country: country ? country : userData.country,
             profession: profession ? profession : userData.profession,
             platformLanguage: platformLanguage ? platformLanguage : userData.platformLanguage,
             profilePhoto: profilePhoto ? profilePhoto : userData.profilePhoto,
           };
+
           this.userService.updateUser(userParams, (err: any, updatedUserData: IUser) => {
             if (err) {
               CommonService.mongoError(err, res);
             } else {
-              CommonService.successResponse(
-                'Profile updated successfully',
-                { id: updatedUserData._id },
-                res
-              );
+              CommonService.successResponse('Profile updated successfully', updatedUserData, res);
             }
           });
         } else {
@@ -96,59 +92,66 @@ export class UserController {
       CommonService.insufficientParameters(res);
     }
   }
-  public updateUserPassword(req: Request, res: Response) {
+  public updateUserPassword(req: Request | any, res: Response) {
     const { currentPassword, newPassword, confirmPassword } = req.body;
-
     if (currentPassword && newPassword && confirmPassword) {
       const userFilter = { _id: req.params.id };
-      this.userService.filterUser(userFilter, (err: any, userData: IUser) => {
-        if (err) {
-          CommonService.mongoError(err, res);
-        } else if (userData) {
-          if (
-            userData.password ===
-            cryptoJs.AES.encrypt(currentPassword, process.env.CRYPTO_JS_PASS_SEC).toString()
-          ) {
-            if (newPassword === confirmPassword) {
-              userData.password = cryptoJs.AES.encrypt(
-                currentPassword,
-                process.env.CRYPTO_JS_PASS_SEC
-              ).toString();
-              userData.modificationNotes.push({
-                modifiedOn: new Date(Date.now()),
-                modifiedBy: null,
-                modificationNote: 'User password updated',
-              });
-              this.userService.updateUser(userData, (err: any) => {
-                if (err) {
-                  CommonService.mongoError(err, res);
-                } else {
-                  const mailParams: IConfirmPasswordUpdate = {
-                    name: userData?.name.firstName + ' ' + userData?.name.lastName,
-                    email: userData?.email,
-                  };
-                  this.mailService
-                    .PasswordUpdateNotification(mailParams)
-                    .then((result) => {
-                      return CommonService.successResponse(
-                        'User password updated successfully',
-                        userData,
-                        res
-                      );
-                    })
-                    .catch((err) => {
-                      return CommonService.failureResponse('Mailer Service error', err, res);
-                    });
-                }
-              });
+      this.userService.filterUser(
+        userFilter,
+        (err: any, userData: IUser) => {
+          if (err) {
+            CommonService.mongoError(err, res);
+          } else if (userData) {
+            const hashedPassword = cryptoJs.AES.decrypt(
+              userData.password,
+              process.env.CRYPTO_JS_PASS_SEC
+            );
+            if (hashedPassword.toString(cryptoJs.enc.Utf8) === currentPassword) {
+              if (newPassword === confirmPassword) {
+                userData.password = cryptoJs.AES.encrypt(
+                  newPassword,
+                  process.env.CRYPTO_JS_PASS_SEC
+                ).toString();
+                userData.modificationNotes.push({
+                  modifiedOn: new Date(),
+                  modifiedBy: req.user.id,
+                  modificationNote: 'User password updated',
+                });
+
+                this.userService.updateUser(userData, (err: any, updatedUserData: IUser) => {
+                  if (err) {
+                    return CommonService.mongoError(err, res);
+                  } else {
+                    const mailParams: IConfirmPasswordUpdate = {
+                      name: updatedUserData?.name.firstName + ' ' + updatedUserData?.name.lastName,
+                      email: updatedUserData?.email,
+                    };
+                    this.mailService
+                      .PasswordUpdateNotification(mailParams)
+                      .then((result) => {
+                        return CommonService.successResponse(
+                          'User password updated successfully',
+                          { id: updatedUserData._id },
+                          res
+                        );
+                      })
+                      .catch((err) => {
+                        return CommonService.failureResponse('Mailer Service error', err, res);
+                      });
+                  }
+                });
+              } else {
+                CommonService.failureResponse('Passwords do not match', null, res);
+              }
             } else {
-              CommonService.failureResponse('Invalid current password provided', null, res);
+              return CommonService.failureResponse('Invalid current password provided', null, res);
             }
+          } else {
+            return CommonService.failureResponse('invalid user', null, res);
           }
-        } else {
-          CommonService.failureResponse('invalid user', null, res);
-        }
-      });
+        },
+        true
+      );
     } else {
       // error response if some fields are missing in request body
       return CommonService.insufficientParameters(res);

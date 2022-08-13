@@ -19,7 +19,7 @@ export class UploadRoutes {
   public route(app: Application) {
     app.post(
       '/api/upload/profile-photo',
-      AuthenticationMiddleWare.verifyTokenAndAuthorization,
+      AuthenticationMiddleWare.verifyToken,
       this.upload.single('image'),
       (req: Request, res: Response) => {
         this.uploadController.uploadProfileImage(req, res);
