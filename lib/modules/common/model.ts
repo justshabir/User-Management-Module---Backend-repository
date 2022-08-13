@@ -1,16 +1,16 @@
 export interface ModificationNote {
-  modified_on: Date;
-  modified_by: string | null;
-  modification_note: string;
+  modifiedOn: Date;
+  modifiedBy: string | null;
+  modificationNote: string;
 }
 
 export const ModificationNote = {
-  modified_on: Date,
-  modified_by: String,
-  modification_note: String,
+  modifiedOn: Date,
+  modifiedBy: String,
+  modificationNote: String,
 };
 
-export enum response_status_codes {
+export enum responseStatusCodes {
   success = 200,
   created = 201,
   no_content = 204,
@@ -18,6 +18,7 @@ export enum response_status_codes {
   bad_request = 400,
   unauthorized = 401,
   forbidden = 403,
+  unprocessable = 422,
   internal_server_error = 500,
   not_implemented = 501,
 }

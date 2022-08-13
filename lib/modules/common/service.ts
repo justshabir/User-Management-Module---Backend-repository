@@ -1,46 +1,53 @@
 import { Response } from 'express';
-import { response_status_codes } from './model';
+import { responseStatusCodes } from './model';
 
-export function successResponse(message: string, DATA: any, res: Response) {
-  res.status(response_status_codes.success).json({
-    STATUS: 'SUCCESS',
-    MESSAGE: message,
-    DATA,
-  });
+class CommonService {
+  public static successResponse(message: string, DATA: any, res: Response) {
+    res.status(responseStatusCodes.success).json({
+      STATUS: 'SUCCESS',
+      MESSAGE: message,
+      DATA,
+    });
+  }
+  public static failureResponse(message: string, DATA: any, res: Response) {
+    res.status(responseStatusCodes.bad_request).json({
+      STATUS: 'FAILURE',
+      MESSAGE: message,
+      DATA,
+    });
+  }
+  public static unAuthorizedResponse(message: string, res: Response) {
+    res.status(responseStatusCodes.unauthorized).json({
+      STATUS: 'FAILURE',
+      MESSAGE: message,
+    });
+  }
+  public static forbiddenResponse(message: string, res: Response) {
+    res.status(responseStatusCodes.forbidden).json({
+      STATUS: 'FAILURE',
+      MESSAGE: message,
+    });
+  }
+  public static UnprocessableResponse(message: string, res: Response) {
+    res.status(responseStatusCodes.unprocessable).json({
+      STATUS: 'FAILURE',
+      MESSAGE: message,
+    });
+  }
+  public static insufficientParameters(res: Response) {
+    res.status(responseStatusCodes.bad_request).json({
+      STATUS: 'FAILURE',
+      MESSAGE: 'Insufficient parameters',
+      DATA: {},
+    });
+  }
+  public static mongoError(err: any, res: Response) {
+    res.status(responseStatusCodes.internal_server_error).json({
+      STATUS: 'FAILURE',
+      MESSAGE: 'MongoDB error',
+      DATA: err,
+    });
+  }
 }
 
-export function failureResponse(message: string, DATA: any, res: Response) {
-  res.status(response_status_codes.bad_request).json({
-    STATUS: 'FAILURE',
-    MESSAGE: message,
-    DATA,
-  });
-}
-export function unAuthorizedResponse(message: string, res: Response) {
-  res.status(response_status_codes.unauthorized).json({
-    STATUS: 'FAILURE',
-    MESSAGE: message,
-  });
-}
-export function forbiddenResponse(message: string, res: Response) {
-  res.status(response_status_codes.forbidden).json({
-    STATUS: 'FAILURE',
-    MESSAGE: message,
-  });
-}
-
-export function insufficientParameters(res: Response) {
-  res.status(response_status_codes.bad_request).json({
-    STATUS: 'FAILURE',
-    MESSAGE: 'Insufficient parameters',
-    DATA: {},
-  });
-}
-
-export function mongoError(err: any, res: Response) {
-  res.status(response_status_codes.internal_server_error).json({
-    STATUS: 'FAILURE',
-    MESSAGE: 'MongoDB error',
-    DATA: err,
-  });
-}
+export default CommonService;

@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import { forbiddenResponse, unAuthorizedResponse } from '../modules/common/service';
+import CommonService from '../modules/common/service';
 import { IUser } from '../modules/users/model';
 
 class AuthMiddleWare {
-  public createToken(user: IUser) {
+  public static createToken(user: IUser) {
     const accessToken = jwt.sign(
       {
         id: user._id,
@@ -16,38 +16,43 @@ class AuthMiddleWare {
     );
     return accessToken;
   }
-  public verifyToken(req: Request, res: Response, next: NextFunction) {
+  public static verifyToken(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
     if (authHeader) {
       const token = authHeader.split(' ')[1];
       jwt.verify(token, process.env.JWT_SEC, (err, user: IUser) => {
-        if (err) return forbiddenResponse('Token is invalid or has expired!', res);
+        if (err) return CommonService.forbiddenResponse('Token is invalid or has expired!', res);
         req.user = user;
         next();
       });
     } else {
-      return unAuthorizedResponse('You are not authenticated!', res);
+      return CommonService.unAuthorizedResponse('You are not authenticated!', res);
     }
   }
-  public verifyTokenAndAuthorization(req: any, res: Response, next: NextFunction) {
-    this.verifyToken(req, res, () => {
+  public static verifyTokenAndAuthorization(req: any, res: Response, next: NextFunction) {
+    AuthMiddleWare.verifyToken(req, res, () => {
       if (req.user?.id === req.params.id || req.user?.isAdmin) {
         next();
       } else {
-        return forbiddenResponse('You are not allowed to perfom this operation!', res);
+        return CommonService.forbiddenResponse(
+          'You are not allowed to perfom this operation!',
+          res
+        );
       }
     });
   }
-  public verifyTokenAndAdmin(req: any, res: Response, next: NextFunction) {
-    this.verifyToken(req, res, () => {
+  public static verifyTokenAndAdmin(req: any, res: Response, next: NextFunction) {
+    AuthMiddleWare.verifyToken(req, res, () => {
       if (req.user?.isAdmin) {
         next();
       } else {
-        return forbiddenResponse('You are not allowed to perform this operation!', res);
+        return CommonService.forbiddenResponse(
+          'You are not allowed to perform this operation!',
+          res
+        );
       }
     });
   }
 }
 
-const AuthenticationMiddleWare = new AuthMiddleWare();
-export default AuthenticationMiddleWare;
+export default AuthMiddleWare;

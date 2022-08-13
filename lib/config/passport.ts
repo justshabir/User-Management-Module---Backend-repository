@@ -5,11 +5,11 @@ import MicrosoftStrategy from 'passport-microsoft';
 import LocalStrategy from 'passport-local';
 import dotenv from 'dotenv';
 import { IUser } from '../modules/users/model';
-import user_service from '../modules/users/service';
+import userService from '../modules/users/service';
 import { accountSourceEnum, accountStatusEnum } from '../utils/enums';
 dotenv.config();
 
-const UserService = new user_service();
+const UserService = new userService();
 
 passport.use(
   new LocalStrategy.Strategy(async function (username: string, password: string, done: any) {
@@ -41,10 +41,10 @@ passport.use(
 
       UserService.filterUser({ email }, (err: any, currentUser: IUser) => {
         if (!currentUser) {
-          const user_params: IUser = {
+          const userParams: IUser = {
             name: {
-              first_name: familyName || givenName,
-              last_name: givenName || displayName,
+              firstName: familyName || givenName,
+              lastName: givenName || displayName,
             },
             email: email,
             source: 'google',
@@ -52,14 +52,14 @@ passport.use(
             profilePhoto: profilePhoto,
             modificationNotes: [
               {
-                modified_on: new Date(Date.now()),
-                modified_by: null,
-                modification_note: 'New user created',
+                modifiedOn: new Date(Date.now()),
+                modifiedBy: null,
+                modificationNote: 'New user created',
               },
             ],
           };
-          return UserService.createUser(user_params, (err, user_data: IUser) => {
-            return done(err, user_data);
+          return UserService.createUser(userParams, (err, userData: IUser) => {
+            return done(err, userData);
           });
         } else if (currentUser.source != 'google') {
           return done(err, false, {
@@ -90,10 +90,10 @@ passport.use(
 
       UserService.filterUser({ email }, (err: any, currentUser: IUser) => {
         if (!currentUser) {
-          const user_params: IUser = {
+          const userParams: IUser = {
             name: {
-              first_name: familyName || givenName,
-              last_name: givenName || displayName,
+              firstName: familyName || givenName,
+              lastName: givenName || displayName,
             },
             email: email,
             source: accountSourceEnum.LINKEDIN,
@@ -101,14 +101,14 @@ passport.use(
             profilePhoto: profilePhoto,
             modificationNotes: [
               {
-                modified_on: new Date(Date.now()),
-                modified_by: null,
-                modification_note: 'New user created',
+                modifiedOn: new Date(Date.now()),
+                modifiedBy: null,
+                modificationNote: 'New user created',
               },
             ],
           };
-          return UserService.createUser(user_params, (err: any, user_data: IUser) => {
-            return done(err, user_data);
+          return UserService.createUser(userParams, (err: any, userData: IUser) => {
+            return done(err, userData);
           });
         }
         if (currentUser.source != accountSourceEnum.LINKEDIN) {
@@ -137,10 +137,10 @@ passport.use(
       const givenName = profile.name?.givenName;
       UserService.filterUser({ email }, (err: any, currentUser: IUser) => {
         if (!currentUser) {
-          const user_params: IUser = {
+          const userParams: IUser = {
             name: {
-              first_name: familyName || givenName,
-              last_name: givenName || displayName,
+              firstName: familyName || givenName,
+              lastName: givenName || displayName,
             },
             email: email,
             source: accountSourceEnum.MICROSOFT,
@@ -148,14 +148,14 @@ passport.use(
             profilePhoto: '',
             modificationNotes: [
               {
-                modified_on: new Date(Date.now()),
-                modified_by: null,
-                modification_note: 'New user created',
+                modifiedOn: new Date(Date.now()),
+                modifiedBy: null,
+                modificationNote: 'New user created',
               },
             ],
           };
-          return UserService.createUser(user_params, (err: any, user_data: IUser) => {
-            return done(err, user_data);
+          return UserService.createUser(userParams, (err: any, userData: IUser) => {
+            return done(err, userData);
           });
         }
         if (currentUser.source != accountSourceEnum.MICROSOFT) {
@@ -174,8 +174,8 @@ passport.serializeUser((user: IUser, done: any) => {
 });
 
 passport.deserializeUser(async (id: number, done: any) => {
-  const user_filter = { _id: id };
-  UserService.filterUser(user_filter, (err: any, user: IUser) => {
+  const userFilter = { _id: id };
+  UserService.filterUser(userFilter, (err: any, user: IUser) => {
     if (err) {
       console.log('Passport serialization error', err);
     }

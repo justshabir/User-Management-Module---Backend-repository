@@ -1,14 +1,13 @@
 import mongoose from 'mongoose';
 import { ModificationNote } from '../common/model';
-
 const { Schema } = mongoose;
 
 const schema = new Schema(
   {
     name: {
       type: {
-        first_name: String,
-        last_name: String,
+        firstName: String,
+        lastName: String,
       },
     },
     email: {
@@ -16,9 +15,22 @@ const schema = new Schema(
       required: [true, 'email required'],
       unique: [true, 'email already registered'],
     },
+    country: {
+      type: String,
+      default: null,
+    },
+    platformLanguage: {
+      type: String,
+      default: null,
+    },
+    profession: {
+      type: String,
+      default: null,
+    },
     password: { type: String, select: false },
-    phone_number: String,
+    phoneNumber: String,
     gender: String,
+
     isAdmin: {
       type: Boolean,
       default: false,
@@ -35,7 +47,7 @@ const schema = new Schema(
     },
     status: { type: String, enum: ['Pending', 'Active', 'Suspended'], default: 'Pending' },
     confirmationCode: { type: String },
-    profilePhoto: { type: String },
+    profilePhoto: { type: Schema.Types.ObjectId, ref: 'Image' },
     source: {
       type: String,
       enum: ['local', 'google', 'linkedin', 'microsoft'],
@@ -48,6 +60,16 @@ const schema = new Schema(
       type: Date,
     },
     modificationNotes: [ModificationNote],
+    refId: {
+      type: String,
+      unique: true,
+    },
+    referrals: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'users',
+      },
+    ],
   },
   {
     timestamps: true,
