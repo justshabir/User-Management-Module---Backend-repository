@@ -3,8 +3,8 @@ import passport from 'passport';
 import CommonService from '../modules/common/service';
 import authMiddleWare from '../middlewares/auth';
 import { ClientBaseUrl } from '../config/app';
-import UserService from 'modules/users/service';
-import { IUser } from 'modules/users/model';
+import UserService from '../modules/users/service';
+import { IUser } from '../modules/users/model';
 
 export class AuthController {
   /** Create new instances of needed services here example shown below */
