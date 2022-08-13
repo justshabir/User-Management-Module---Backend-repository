@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import { ModificationNote } from '../common/model';
-
 const { Schema } = mongoose;
 
 const schema = new Schema(
@@ -18,15 +17,15 @@ const schema = new Schema(
     },
     country: {
       type: String,
-      default: null
+      default: null,
     },
     platformLanguage: {
       type: String,
-      default: null
+      default: null,
     },
     profession: {
       type: String,
-      default: null
+      default: null,
     },
     password: { type: String, select: false },
     phoneNumber: String,
@@ -61,6 +60,16 @@ const schema = new Schema(
       type: Date,
     },
     modificationNotes: [ModificationNote],
+    refId: {
+      type: String,
+      unique: true,
+    },
+    referrals: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'users',
+      },
+    ],
   },
   {
     timestamps: true,
