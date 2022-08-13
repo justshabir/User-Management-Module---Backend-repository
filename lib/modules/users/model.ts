@@ -1,3 +1,4 @@
+
 import { ModificationNote } from '../common/model';
 
 export interface IUser {
@@ -23,4 +24,7 @@ export interface IUser {
   resetPasswordToken?: string;
   resetPasswordExpires?: number;
   modificationNotes: ModificationNote[];
+  referrals: any[];
+  refId?: string;
 }
+

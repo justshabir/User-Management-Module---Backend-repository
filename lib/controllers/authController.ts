@@ -1,16 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
-import CommonService from '../modules/common/service';
+import  CommonService  from '../modules/common/service';
 import authMiddleWare from '../middlewares/auth';
 import { ClientBaseUrl } from '../config/app';
+import UserService from 'modules/users/service';
+import { IUser } from 'modules/users/model';
 
 export class AuthController {
   /** Create new instances of needed services here example shown below */
-  // private userService: UserService = new UserService();
+  private userService: UserService = new UserService();
 
   public createUser(req: Request, res: Response) {
     return CommonService.successResponse('success......', null, res); // replace this with appropriate logic
     // const { password, email, lastName, firstName, phoneNumber = '', gender = '' } = req.body;
+
     /**
      * this check whether all required fields were send through the request
      * Wtite your account registration logic here.
@@ -30,13 +33,15 @@ export class AuthController {
      *  based on the confirmation code sent to their mail upon account registration
      */
   }
-  public logOutUser(req: any, res: Response) {
-    return CommonService.successResponse('success......', null, res); // replace this with appropriate logic
-    /**
-     * Write the neccessary logic to logout a user
-     * It is important to update the `lastvisited`
-     * property on the user's object to the current date
-     */
+  public logoutUser(req: any, res: Response) {
+    this.userService.filterUser({_id: req?.user.id}, (err: any, user_data:any)=>{
+      if (user_data){
+        user_data.lastVisited = new Date();
+        user_data.save((err:any, updated_user_data: IUser)=>{
+          return CommonService.successResponse('Logout successfully', updated_user_data, res)
+        })
+      } else return CommonService.failureResponse('Invalid Session', err, res);
+    })
   }
 
   /**
@@ -44,7 +49,7 @@ export class AuthController {
    * @returns
    * The following methods perform authentication using user's social media account
    */
-  public linked_in() {
+  public linkedIn() {
     return passport.authenticate('linkedin');
   }
   public linkedInCallback(req: Request, res: Response, next: NextFunction) {
@@ -106,11 +111,7 @@ export class AuthController {
       const accessToken = authMiddleWare.createToken(req.user);
       return CommonService.successResponse('Successful', { user: req.user, accessToken }, res);
     } else {
-      return CommonService.failureResponse(
-        'Login Failed. Unable to obtain access token',
-        null,
-        res
-      );
+      return CommonService.failureResponse('Login Failed. Unable to obtain access token', null, res);
     }
   }
 }

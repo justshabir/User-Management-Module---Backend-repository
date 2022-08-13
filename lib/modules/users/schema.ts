@@ -1,7 +1,19 @@
 import mongoose from 'mongoose';
 import { ModificationNote } from '../common/model';
-
 const { Schema } = mongoose;
+
+
+const referralSchema = new Schema({
+  user:{
+    type: Schema.Types.ObjectId,
+    ref: 'users'
+   }
+},
+ {
+    timestamps: true
+  }
+);
+
 
 const schema = new Schema(
   {
@@ -61,10 +73,16 @@ const schema = new Schema(
       type: Date,
     },
     modificationNotes: [ModificationNote],
+    refId: {
+    type: String,
+    unique: true,
+  },
+  referrals: [referralSchema]
   },
   {
     timestamps: true,
   }
+  
 );
 
 export default mongoose.model('users', schema);
