@@ -37,7 +37,7 @@ export class AuthController {
       ).toString();
       const secret = email + '_' + new Date().getTime();
       const token = jwt.sign({ email }, secret);
-      const user_params: IUser = {
+      const userParams: IUser = {
         name: {
           firstName: firstName,
           lastName: lastName,
@@ -54,7 +54,7 @@ export class AuthController {
           },
         ],
       };
-      this.userService.createUser(user_params, (err: any, userData: IUser) => {
+      this.userService.createUser(userParams, (err: any, userData: IUser) => {
         if (err) {
           if (err?.keyValue && err?.keyValue?.email) {
             CommonService.failureResponse(
