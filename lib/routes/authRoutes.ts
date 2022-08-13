@@ -15,7 +15,7 @@ export class AuthRoutes {
     app.get('/api/auth/confirm/:confirmationCode', (req: Request, res: Response) => {
       this.authController.activateAccount(req, res);
     });
-    app.get('/api/auth/linkedin', this.authController.linked_in());
+    app.get('/api/auth/linkedin', this.authController.linkedIn());
     app.get('/api/auth/linkedin/callback', (req: Request, res: Response, next: NextFunction) => {
       this.authController.linkedInCallback(req, res, next);
     });
@@ -34,7 +34,7 @@ export class AuthRoutes {
       '/api/auth/logout',
       AuthententicationMiddleWare.verifyToken,
       (req: Request, res: Response) => {
-        this.authController.logOutUser(req, res);
+        this.authController.logoutUser(req, res);
       }
     );
   }
