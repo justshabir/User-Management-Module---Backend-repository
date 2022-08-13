@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
-import  CommonService  from '../modules/common/service';
+import CommonService from '../modules/common/service';
 import authMiddleWare from '../middlewares/auth';
 import { ClientBaseUrl } from '../config/app';
 import UserService from 'modules/users/service';
@@ -34,14 +34,18 @@ export class AuthController {
      */
   }
   public logoutUser(req: any, res: Response) {
-    this.userService.filterUser({_id: req?.user.id}, (err: any, user_data:any)=>{
-      if (user_data){
-        user_data.lastVisited = new Date();
-        user_data.save((err:any, updated_user_data: IUser)=>{
-          return CommonService.successResponse('Logout successfully', updated_user_data, res)
-        })
+    this.userService.filterUser({ _id: req?.user.id }, (err: any, userData: any) => {
+      if (userData) {
+        userData.lastVisited = new Date();
+        userData.save((err: any, updatedUserData: IUser) => {
+          return CommonService.successResponse(
+            'Logout successfully',
+            { id: updatedUserData._id },
+            res
+          );
+        });
       } else return CommonService.failureResponse('Invalid Session', err, res);
-    })
+    });
   }
 
   /**
@@ -111,7 +115,11 @@ export class AuthController {
       const accessToken = authMiddleWare.createToken(req.user);
       return CommonService.successResponse('Successful', { user: req.user, accessToken }, res);
     } else {
-      return CommonService.failureResponse('Login Failed. Unable to obtain access token', null, res);
+      return CommonService.failureResponse(
+        'Login Failed. Unable to obtain access token',
+        null,
+        res
+      );
     }
   }
 }
