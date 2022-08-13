@@ -6,8 +6,9 @@ export default class UserService {
     const _session = new Users(userParams);
     _session.save(callback);
   }
-  public filterUser(query: any, callback: any) {
-    Users.findOne(query, callback).select('+password');
+  public filterUser(query: any, callback: any, selectPassword?: boolean) {
+    if (selectPassword) Users.findOne(query, callback).select('+password');
+    else Users.findOne(query, callback);
   }
   public updateUser(userParams: IUser, callback: any) {
     const query = { _id: userParams._id };

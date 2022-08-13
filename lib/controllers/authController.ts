@@ -5,34 +5,147 @@ import authMiddleWare from '../middlewares/auth';
 import { ClientBaseUrl } from '../config/app';
 import UserService from '../modules/users/service';
 import { IUser } from '../modules/users/model';
+import MailerService from '../modules/mailer/service';
+import cryptoJs from 'crypto-js';
+import { IConfirmationMail } from '../modules/mailer/model';
+import jwt from 'jsonwebtoken';
+import { accountStatusEnum } from '../utils/enums';
 
 export class AuthController {
-  /** Create new instances of needed services here example shown below */
   private userService: UserService = new UserService();
+  private mailService: MailerService = new MailerService();
+
+  public loginSuccess(req: any, res: Response) {
+    if (req?.user) {
+      const accessToken = authMiddleWare.createToken(req.user);
+      return CommonService.successResponse('Successful', { user: req.user, accessToken }, res);
+    } else {
+      return CommonService.failureResponse(
+        'Login Failed. Unable to obtain access token',
+        null,
+        res
+      );
+    }
+  }
 
   public createUser(req: Request, res: Response) {
-    return CommonService.successResponse('success......', null, res); // replace this with appropriate logic
-    // const { password, email, lastName, firstName, phoneNumber = '', gender = '' } = req.body;
+    const { password, email, lastName, firstName } = req.body;
+    if (firstName && lastName && email && password) {
+      const hashedPassword = cryptoJs.AES.encrypt(
+        password,
+        process.env.CRYPTO_JS_PASS_SEC
+      ).toString();
+      const secret = email + '_' + new Date().getTime();
+      const token = jwt.sign({ email }, secret);
+      const user_params: IUser = {
+        name: {
+          firstName: firstName,
+          lastName: lastName,
+        },
+        email: email,
+        password: hashedPassword,
+        confirmationCode: token,
+        modificationNotes: [
+          {
+            modifiedOn: new Date(Date.now()),
+            modifiedBy: null,
+            modificationNote: 'New user created',
+          },
+        ],
+      };
+      this.userService.createUser(user_params, (err: any, userData: IUser) => {
+        if (err) {
+          if (err?.keyValue && err?.keyValue?.email) {
+            CommonService.failureResponse(
+              `User already exist`,
+              { username: err?.keyValue?.email },
+              res
+            );
+          } else {
+            return CommonService.mongoError(err, res);
+          }
+        } else {
+          const mailParams: IConfirmationMail = {
+            name: userData?.name.firstName + ' ' + userData?.name.lastName,
+            confirmationCode: userData.confirmationCode,
+            email,
+          };
 
-    /**
-     * this check whether all required fields were send through the request
-     * Wtite your account registration logic here.
-     * Send email containing confirmation code through whcih users are to use to verify their account
-     */
+          this.mailService
+            .sendAccountActivationRequest(mailParams)
+            .then((result) => {
+              return CommonService.successResponse(
+                'User created successfully',
+                { id: userData._id },
+                res
+              );
+            })
+            .catch((err) => {
+              this.userService.deleteUser(userData._id, () => {
+                return CommonService.failureResponse('Mailer Service error', err, res);
+              });
+            });
+        }
+      });
+    } else {
+      // error response if some fields are missing in request body
+      return CommonService.insufficientParameters(res);
+    }
   }
 
   public loginUser(req: Request, res: Response, next: NextFunction) {
-    /**
-     * Make use of Passport local strategy here to validate user's credentials and session
-     */
+    passport.authenticate('local', function (err, user: IUser | any, info) {
+      if (info && Object.keys(info).length > 0) {
+        return CommonService.failureResponse(info?.message, null, res);
+      }
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return CommonService.unAuthorizedResponse('Wrong Credentials!', res);
+      }
+      if (user.status !== accountStatusEnum.ACTIVE) {
+        return CommonService.unAuthorizedResponse(
+          'Pending Account. Please Verify Your Email!',
+          res
+        );
+      }
+      const accessToken = authMiddleWare.createToken(user);
+      const { password, ...rest } = user._doc;
+      return CommonService.successResponse(
+        'Login Successful',
+        { user: { ...rest }, accessToken },
+        res
+      );
+    })(req, res, next);
   }
 
   public activateAccount(req: Request, res: Response) {
-    /**
-     * Use this session to validate and activate user's account
-     *  based on the confirmation code sent to their mail upon account registration
-     */
+    this.userService.filterUser(
+      { confirmationCode: req.params.confirmationCode },
+      (err: any, userData: IUser | any) => {
+        if (!userData || err) {
+          return CommonService.failureResponse(
+            'Confirmation code is invalid or has expired',
+            err,
+            res
+          );
+        }
+        userData.status = accountStatusEnum.ACTIVE;
+        userData.confirmationCode = undefined;
+        userData.save((err: any, updatedUserData: IUser) => {
+          if (updatedUserData) {
+            return CommonService.successResponse(
+              'Account verified',
+              { id: updatedUserData._id },
+              res
+            );
+          } else return CommonService.failureResponse('Account Verification Failed', err, res);
+        });
+      }
+    );
   }
+
   public logoutUser(req: any, res: Response) {
     this.userService.filterUser({ _id: req?.user.id }, (err: any, userData: any) => {
       if (userData) {
@@ -94,6 +207,7 @@ export class AuthController {
   public microsoft() {
     return passport.authenticate('microsoft', { prompt: 'select_account' });
   }
+
   public microsoftCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('microsoft', function (err, user, info) {
       if (info && Object.keys(info).length) {
@@ -109,17 +223,5 @@ export class AuthController {
         }
       });
     })(req, res, next);
-  }
-  public loginSuccess(req: any, res: Response) {
-    if (req?.user) {
-      const accessToken = authMiddleWare.createToken(req.user);
-      return CommonService.successResponse('Successful', { user: req.user, accessToken }, res);
-    } else {
-      return CommonService.failureResponse(
-        'Login Failed. Unable to obtain access token',
-        null,
-        res
-      );
-    }
   }
 }

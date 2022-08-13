@@ -7,15 +7,37 @@ import dotenv from 'dotenv';
 import { IUser } from '../modules/users/model';
 import userService from '../modules/users/service';
 import { accountSourceEnum, accountStatusEnum } from '../utils/enums';
+import cryptoJs from 'crypto-js';
+
 dotenv.config();
 
 const UserService = new userService();
 
 passport.use(
   new LocalStrategy.Strategy(async function (username: string, password: string, done: any) {
-    /**
-     * Write the logic for login using passport local strategy here
-     */
+    UserService.filterUser(
+      { email: username },
+      (err: any, user: IUser) => {
+        if (!user) {
+          return done(err, false, {
+            message: `User with username ${username} does not exist`,
+          });
+        }
+
+        if (user.source != 'local') {
+          return done(err, false, {
+            message: `You have previously signed up with a different signin method`,
+          });
+        }
+        const hashedPassword = cryptoJs.AES.decrypt(user.password, process.env.CRYPTO_JS_PASS_SEC);
+        const originalPassword = hashedPassword.toString(cryptoJs.enc.Utf8);
+        if (!(password == originalPassword)) {
+          return done(err, false, { message: `Wrong credentials` });
+        }
+        return done(null, user);
+      },
+      true
+    );
   })
 );
 
