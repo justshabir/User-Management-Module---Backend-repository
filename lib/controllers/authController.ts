@@ -135,7 +135,11 @@ export class AuthController {
         userData.confirmationCode = undefined;
         userData.save((err: any, updatedUserData: IUser) => {
           if (updatedUserData) {
-            return CommonService.successResponse('Account verified', updatedUserData, res);
+            return CommonService.successResponse(
+              'Account verified',
+              { id: updatedUserData._id },
+              res
+            );
           } else return CommonService.failureResponse('Account Verification Failed', err, res);
         });
       }
