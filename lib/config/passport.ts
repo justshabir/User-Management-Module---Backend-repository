@@ -69,10 +69,9 @@ passport.use(
               lastName: givenName || displayName,
             },
             email: email,
-            source: 'google',
-            status: 'Active',
+            source: accountSourceEnum.GOOGLE,
+            status: accountStatusEnum.ACTIVE,
             refId: id,
-            profilePhoto: '',
             modificationNotes: [
               {
                 modifiedOn: new Date(Date.now()),
@@ -122,7 +121,7 @@ passport.use(
             email: email,
             source: accountSourceEnum.LINKEDIN,
             status: accountStatusEnum.ACTIVE,
-            profilePhoto: '',
+
             refId: id,
             modificationNotes: [
               {
@@ -172,7 +171,7 @@ passport.use(
             source: accountSourceEnum.MICROSOFT,
             status: accountStatusEnum.ACTIVE,
             refId: id,
-            profilePhoto: '',
+
             modificationNotes: [
               {
                 modifiedOn: new Date(Date.now()),
