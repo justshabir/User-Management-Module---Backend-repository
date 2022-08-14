@@ -53,12 +53,10 @@ class App {
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
-        cookie: {
-          secure: true,
-          httpOnly: true,
-          sameSite: 'none',
-          maxAge: 60 * 60 * 24 * 1000,
-        },
+        cookie:
+          process.env.NODE_ENV === 'development'
+            ? {}
+            : { secure: true, httpOnly: false, sameSite: 'none', maxAge: 60 * 60 * 24 * 1000 },
       })
     );
     this.app.use(passport.initialize());
