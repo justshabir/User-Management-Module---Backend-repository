@@ -201,10 +201,14 @@ passport.serializeUser((user: IUser, done: any) => {
 
 passport.deserializeUser(async (id: number, done: any) => {
   const userFilter = { _id: id };
-  UserService.filterUser(userFilter, (err: any, user: IUser) => {
+  UserService.filterUser(userFilter, (err: any, user: any) => {
     if (err) {
       console.log('Passport serialization error', err);
     }
-    done(err, user);
+    user.populate('profilePhoto', (err: any, userData: any) => {
+      if (err) return console.log(err);
+      const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.image : '';
+      done(err, { ...userData._doc, profilePhoto });
+    });
   });
 });

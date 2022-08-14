@@ -112,12 +112,16 @@ export class AuthController {
         );
       }
       const accessToken = authMiddleWare.createToken(user);
-      const { password, ...rest } = user._doc;
-      return CommonService.successResponse(
-        'Login Successful',
-        { user: { ...rest }, accessToken },
-        res
-      );
+      user.populate('profilePhoto', (err: any, userData: any) => {
+        if (err) return CommonService.mongoError(err, res);
+        const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.image : '';
+        const { password, ...rest } = user._doc;
+        return CommonService.successResponse(
+          'Successful',
+          { user: { ...rest, profilePhoto }, accessToken },
+          res
+        );
+      });
     })(req, res, next);
   }
 
