@@ -56,7 +56,7 @@ export class UserController {
           userData.modificationNotes.push({
             modifiedOn: new Date(),
             modifiedBy: req.user.id,
-            modificationNote: 'User password updated',
+            modificationNote: 'User Profile Updated Successfully',
           });
           const userParams: IUser = {
             _id: req.params.id,
@@ -64,7 +64,7 @@ export class UserController {
               firstName || lastName
                 ? {
                     firstName: firstName ? firstName : userData.name.firstName,
-                    lastName: firstName ? lastName : userData.name.lastName,
+                    lastName: lastName ? lastName : userData.name.lastName,
                   }
                 : userData.name,
             phoneNumber: phoneNumber ? phoneNumber : userData.phoneNumber,
@@ -76,14 +76,30 @@ export class UserController {
             platformLanguage: platformLanguage ? platformLanguage : userData.platformLanguage,
             profilePhoto: profilePhoto ? profilePhoto : userData.profilePhoto,
           };
-
-          this.userService.updateUser(userParams, (err: any, updatedUserData: IUser) => {
-            if (err) {
-              CommonService.mongoError(err, res);
-            } else {
-              CommonService.successResponse('Profile updated successfully', updatedUserData, res);
+          this.userService.updateUser(
+            userParams,
+            async (err: any, updatedUserData: IUser | any) => {
+              if (err) {
+                CommonService.mongoError(err, res);
+              } else {
+                updatedUserData
+                  .populate('profilePhoto')
+                  .then((populatedUserData: any) => {
+                    const profilePhoto = populatedUserData.profilePhoto
+                      ? populatedUserData.profilePhoto?.image
+                      : '';
+                    return CommonService.successResponse(
+                      'User Profile Updated Successfully',
+                      { ...populatedUserData._doc, profilePhoto },
+                      res
+                    );
+                  })
+                  .catch((err: any) => {
+                    return CommonService.mongoError(err, res);
+                  });
+              }
             }
-          });
+          );
         } else {
           CommonService.failureResponse('invalid user', null, res);
         }
