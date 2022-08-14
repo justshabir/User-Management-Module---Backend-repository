@@ -55,7 +55,7 @@ class App {
         saveUninitialized: true,
         cookie: {
           secure: true,
-          httpOnly: true,
+          httpOnly: false,
           sameSite: 'none',
           maxAge: 60 * 60 * 24 * 1000,
         },
