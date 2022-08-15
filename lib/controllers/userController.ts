@@ -65,9 +65,9 @@ export class UserController {
             name:
               firstName || lastName
                 ? {
-                    firstName: firstName ? firstName : userData.name.firstName,
-                    lastName: lastName ? lastName : userData.name.lastName,
-                  }
+                  firstName: firstName ? firstName : userData.name.firstName,
+                  lastName: firstName ? lastName : userData.name.lastName,
+                }
                 : userData.name,
             phoneNumber: phoneNumber ? phoneNumber : userData.phoneNumber,
             refId: userData.refId,
@@ -192,6 +192,7 @@ export class UserController {
   }
   public forgotPassword(req: Request, res: Response) {
     const { email } = req.body;
+    if (!email) return CommonService.failureResponse('No user email provided', null, res);
     this.userService.filterUser({ email }, (err: any, userData: IUser) => {
       if (err || !userData) {
         return CommonService.failureResponse('No user with this email exist ', err, res);
@@ -220,7 +221,7 @@ export class UserController {
       const token = JWT.sign(tokenObject, secret);
       userData.resetPasswordExpires = Date.now() + 3600000;
       userData.resetPasswordToken = token;
-      this.userService.updateUser(userData, (err: any, updatedData: any) => {
+      this.userService.updateUser(userData, (err: any, updatedData: IUser) => {
         const mailParams: IForgotPassword = {
           name: updatedData.name.firstName,
           token,
@@ -231,22 +232,26 @@ export class UserController {
           .then((result) => {
             return CommonService.successResponse(
               'Request successful. Kindly follow the instructions sent to your mail to reset your password',
-              {id: updatedData._id,
-              email: updatedData.email},
+              {
+                id: updatedData._id,
+                email: updatedData.email
+              },
               res
             );
           })
           .catch(async (err) => {
             updatedData.resetPasswordToken = null;
             updatedData.resetPasswordExpires = null;
-            await updatedData.save();
-            return CommonService.failureResponse('Mailer Service Error', err, res);
+            this.userService.updateUser(updatedData, (err: any) => {
+              return CommonService.failureResponse('Mailer Service Error', err, res);
+            });
           });
       });
-    });
+    })
   }
   public resetPassword(req: Request, res: Response) {
     const { token, password } = req.body;
+    if (!token || !password) return CommonService.failureResponse('No token or password provided', null, res)
     this.userService.filterUser(
       {
         resetPasswordToken: token,
@@ -265,8 +270,16 @@ export class UserController {
         userData.password = hashedPassword;
         userData.resetPasswordToken = null;
         userData.resetPasswordExpires = null;
-        await userData.save();
-        return CommonService.successResponse('Password reset successful', userData, res);
+        this.userService.updateUser(userData, (err: any) => {
+          if (err) {
+            return CommonService.mongoError(err, res);
+          } else {
+            return CommonService.successResponse('Password reset successful', {
+              id: userData._id,
+              email: userData.email
+            }, res);
+          }
+        });
       }
     );
   }
