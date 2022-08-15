@@ -231,7 +231,8 @@ export class UserController {
           .then((result) => {
             return CommonService.successResponse(
               'Request successful. Kindly follow the instructions sent to your mail to reset your password',
-              updatedData,
+              {id: updatedData._id,
+              email: updatedData.email},
               res
             );
           })
