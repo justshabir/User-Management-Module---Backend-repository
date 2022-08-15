@@ -4,8 +4,10 @@ import cryptoJs from 'crypto-js';
 import CommonService from '../modules/common/service';
 import MailerService from '../modules/mailer/service';
 import { IUser } from '../modules/users/model';
-import { IConfirmPasswordUpdate } from '../modules/mailer/model';
+import { IConfirmPasswordUpdate, IForgotPassword } from '../modules/mailer/model';
 import UserService from '../modules/users/service';
+import { accountSourceEnum } from '../utils/enums';
+import JWT from 'jsonwebtoken';
 export class UserController {
   private userService: UserService = new UserService();
   private mailService: MailerService = new MailerService();
@@ -157,7 +159,6 @@ export class UserController {
       return CommonService.insufficientParameters(res);
     }
   }
-
   public deleteUser(req: Request, res: Response) {
     if (req.params.id) {
       this.userService.deleteUser(req.params.id, (err: any, delete_details) => {
@@ -172,5 +173,84 @@ export class UserController {
     } else {
       CommonService.insufficientParameters(res);
     }
+  }
+  public forgotPassword(req: Request, res: Response) {
+    const { email } = req.body;
+    this.userService.filterUser({ email }, (err: any, userData: IUser) => {
+      if (err || !userData) {
+        return CommonService.failureResponse('No user with this email exist ', err, res);
+      } else if (userData?.source !== accountSourceEnum.LOCAL) {
+        return CommonService.failureResponse(
+          `We can not reset your password! Please visit ${userData.source} to do so`,
+          null,
+          res
+        );
+      }
+      const isAlreadyMadeRequest =
+        userData.resetPasswordToken && new Date(userData.resetPasswordExpires) > new Date();
+      if (isAlreadyMadeRequest) {
+        return CommonService.failureResponse(
+          'Password reset request sent already. Please visit your mailbox for further instructions',
+          null,
+          res
+        );
+      }
+      // create a unique token
+      const tokenObject = {
+        email: userData.email,
+        id: userData._id,
+      };
+      const secret = userData._id + '_' + userData.email + '_' + new Date().getTime();
+      const token = JWT.sign(tokenObject, secret);
+      userData.resetPasswordExpires = Date.now() + 3600000;
+      userData.resetPasswordToken = token;
+      this.userService.updateUser(userData, (err: any, updatedData: any) => {
+        const mailParams: IForgotPassword = {
+          name: updatedData.name.firstName,
+          token,
+          email: updatedData.email,
+        };
+        this.mailService
+          .sendPasswordReset(mailParams)
+          .then((result) => {
+            return CommonService.successResponse(
+              'Request successful. Kindly follow the instructions sent to your mail to reset your password',
+              updatedData,
+              res
+            );
+          })
+          .catch(async (err) => {
+            updatedData.resetPasswordToken = null;
+            updatedData.resetPasswordExpires = null;
+            await updatedData.save();
+            return CommonService.failureResponse('Mailer Service Error', err, res);
+          });
+      });
+    });
+  }
+  public resetPassword(req: Request, res: Response) {
+    const { token, password } = req.body;
+    this.userService.filterUser(
+      {
+        resetPasswordToken: token,
+        resetPasswordExpires: {
+          $gte: Date.now(),
+        },
+      },
+      async (err: any, userData: any) => {
+        if (err || !userData) {
+          return CommonService.failureResponse('Token is invalid or has expired. ', err, res);
+        }
+        const hashedPassword = cryptoJs.AES.encrypt(
+          password,
+          process.env.CRYPTO_JS_PASS_SEC
+        ).toString();
+        userData.password = hashedPassword;
+        userData.resetPasswordToken = null;
+        userData.resetPasswordExpires = null;
+        await userData.save();
+        return CommonService.successResponse('Password reset successful', userData, res);
+      }
+    );
   }
 }

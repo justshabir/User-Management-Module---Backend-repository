@@ -30,5 +30,13 @@ export class UserRoutes {
         this.userController.deleteUser(req, res);
       }
     );
+
+    app.post('/api/users/forgot-password', (req: Request, res: Response) => {
+      this.userController.forgotPassword(req, res);
+    });
+
+    app.patch('/api/users/reset-password', (req: Request, res: Response) => {
+      this.userController.resetPassword(req, res);
+    });
   }
 }
