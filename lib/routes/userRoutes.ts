@@ -31,11 +31,11 @@ export class UserRoutes {
       }
     );
 
-    app.post('/api/users/forgot-password', (req: Request, res: Response) => {
+    app.post('/api/user/forgot-password', (req: Request, res: Response) => {
       this.userController.forgotPassword(req, res);
     });
 
-    app.patch('/api/users/reset-password', (req: Request, res: Response) => {
+    app.patch('/api/user/reset-password', (req: Request, res: Response) => {
       this.userController.resetPassword(req, res);
     });
   }
