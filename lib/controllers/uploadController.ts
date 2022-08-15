@@ -5,11 +5,14 @@ import { IUploadProfileImage } from '../modules/upload/model';
 import UploadService from '../modules/upload/service';
 export class UploadController {
   private UploadService: UploadService = new UploadService();
-  public uploadProfileImage(req: Request, res: Response) {
+  public uploadProfileImage(req: any, res: Response) {
+    if (req.err?.code === 'LIMIT_FILE_SIZE') {
+      console.log('File size is too big');
+    }
     if (!req.file) return CommonService.failureResponse('Please Upload an image', null, res);
     const image = {
       data: fs.readFileSync(req.file.path),
-      contentType: 'image/png',
+      contentType: req.file.mimetype,
     };
     this.UploadService.uploadProfilePhoto(
       { image },

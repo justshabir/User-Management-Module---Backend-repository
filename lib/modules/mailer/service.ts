@@ -27,49 +27,45 @@ export default class MailerService {
 
   private client_base_url = ClientBaseUrl;
 
-  public sendAccountActivationRequest(params: IConfirmationMail) {
-    return new Promise(async (resolve, reject) => {
-      const html = confirmAccount(params.confirmationCode, this.client_base_url, params.name);
-      try {
-        await this.transporter.verify();
-        this.transporter.sendMail(
-          {
-            from: this.user,
-            to: params.email,
-            subject: CONFIRM_ACCOUNT_SUBJECT,
-            html: html,
-          },
-          (error) => {
-            if (error) reject(error);
-            else resolve(true);
-          }
-        );
-      } catch (error) {
-        reject(error);
-      }
-    });
+  public async sendAccountActivationRequest(params: IConfirmationMail) {
+    const html = confirmAccount(params.confirmationCode, this.client_base_url, params.name);
+    try {
+      await this.transporter.verify();
+      this.transporter.sendMail(
+        {
+          from: this.user,
+          to: params.email,
+          subject: CONFIRM_ACCOUNT_SUBJECT,
+          html: html,
+        },
+        (error) => {
+          if (error) throw new Error(error?.toString());
+          else return true;
+        }
+      );
+    } catch (error) {
+      throw new Error(error?.toString());
+    }
   }
 
-  public PasswordUpdateNotification(params: IConfirmPasswordUpdate) {
-    return new Promise((resolve, reject) => {
-      const html = confirmPasswordUpdate(params.name);
-      try {
-        this.transporter.verify();
-        this.transporter.sendMail(
-          {
-            from: this.user,
-            to: params.email,
-            subject: CONFIRM_PASSWORD_UPDATE_SUBJECT,
-            html: html,
-          },
-          (error) => {
-            if (error) reject(error);
-            else resolve(true);
-          }
-        );
-      } catch (error) {
-        reject(error);
-      }
-    });
+  public async PasswordUpdateNotification(params: IConfirmPasswordUpdate) {
+    const html = confirmPasswordUpdate(params.name);
+    try {
+      this.transporter.verify();
+      this.transporter.sendMail(
+        {
+          from: this.user,
+          to: params.email,
+          subject: CONFIRM_PASSWORD_UPDATE_SUBJECT,
+          html: html,
+        },
+        (error) => {
+          if (error) throw new Error(error?.toString());
+          else return true;
+        }
+      );
+    } catch (error) {
+      throw new Error(error?.toString());
+    }
   }
 }
