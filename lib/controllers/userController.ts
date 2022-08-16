@@ -222,30 +222,34 @@ export class UserController {
       userData.resetPasswordExpires = Date.now() + 3600000;
       userData.resetPasswordToken = token;
       this.userService.updateUser(userData, (err: any, updatedData: IUser) => {
-        const mailParams: IForgotPassword = {
-          name: updatedData.name.firstName,
-          token,
-          email: updatedData.email,
-        };
-        this.mailService
-          .sendPasswordReset(mailParams)
-          .then((result) => {
-            return CommonService.successResponse(
-              'Request successful. Kindly follow the instructions sent to your mail to reset your password',
-              {
-                id: updatedData._id,
-                email: updatedData.email
-              },
-              res
-            );
-          })
-          .catch(async (err) => {
-            updatedData.resetPasswordToken = null;
-            updatedData.resetPasswordExpires = null;
-            this.userService.updateUser(updatedData, (err: any) => {
-              return CommonService.failureResponse('Mailer Service Error', err, res);
+        if (err) {
+          return CommonService.mongoError(err, res);
+        } else {
+          const mailParams: IForgotPassword = {
+            name: updatedData.name.firstName,
+            token,
+            email: updatedData.email,
+          };
+          this.mailService
+            .sendPasswordReset(mailParams)
+            .then((result) => {
+              return CommonService.successResponse(
+                'Request successful. Kindly follow the instructions sent to your mail to reset your password',
+                {
+                  id: updatedData._id,
+                  email: updatedData.email
+                },
+                res
+              );
+            })
+            .catch(async (err) => {
+              updatedData.resetPasswordToken = null;
+              updatedData.resetPasswordExpires = null;
+              this.userService.updateUser(updatedData, (err: any) => {
+                return CommonService.failureResponse('Mailer Service Error', err, res);
+              });
             });
-          });
+        }
       });
     })
   }
