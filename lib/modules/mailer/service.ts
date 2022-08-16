@@ -29,10 +29,10 @@ export default class MailerService {
   private client_base_url = ClientBaseUrl;
 
   public sendAccountActivationRequest(params: IConfirmationMail) {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const html = confirmAccount(params.confirmationCode, this.client_base_url, params.name);
       try {
-        await this.transporter.verify();
+        this.transporter.verify();
         this.transporter.sendMail(
           {
             from: this.user,
