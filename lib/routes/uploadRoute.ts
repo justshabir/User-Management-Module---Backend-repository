@@ -1,5 +1,5 @@
 import { UploadController } from '../controllers/uploadController';
-import { Application, Request, Response } from 'express';
+import { Application, NextFunction, Request, Response } from 'express';
 import multer, { StorageEngine } from 'multer';
 import AuthenticationMiddleWare from '../middlewares/auth';
 import CommonService from '../modules/common/service';
@@ -24,8 +24,8 @@ export class UploadRoutes {
     app.post(
       '/api/upload/profile-photo',
       AuthenticationMiddleWare.verifyToken,
-       (req, res, next)  => {
-       this.upload(req, res,  (err) =>  {
+      (req: Request, res: Response, next: NextFunction) => {
+        this.upload(req, res, (err: any) => {
           if (err) {
             return CommonService.failureResponse('Error uploading file.', err, res);
           }
