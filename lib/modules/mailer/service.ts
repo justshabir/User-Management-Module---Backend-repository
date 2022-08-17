@@ -51,7 +51,7 @@ export default class MailerService {
   public async PasswordUpdateNotification(params: IConfirmPasswordUpdate) {
     const html = confirmPasswordUpdate(params.name);
     try {
-      this.transporter.verify();
+      await this.transporter.verify();
       this.transporter.sendMail(
         {
           from: this.user,
