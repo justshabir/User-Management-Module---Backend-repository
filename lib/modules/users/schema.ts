@@ -60,12 +60,15 @@ const schema = new Schema(
       type: Date,
     },
     modificationNotes: [ModificationNote],
+    referrer: {
+      type: String,
+      default: 'null'},
     refId: {
       type: String,
       required: [true, 'referral ID required'],
       require: true,
     },
-    referrals: [
+    referrees: [
       {
         type: Schema.Types.ObjectId,
         ref: 'users',

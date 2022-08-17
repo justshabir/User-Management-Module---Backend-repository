@@ -14,9 +14,12 @@ export default class UserService {
     const query = { _id: userParams._id };
     Users.findOneAndUpdate(query, userParams, callback);
   }
-
   public deleteUser(_id: string, callback?: any) {
     const query = { _id };
     Users.deleteOne(query, callback);
   }
+  public findRef(query: any, callback: any) {
+     Users.findOne(query, callback);
+}
+
 }
