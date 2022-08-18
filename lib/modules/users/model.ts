@@ -26,6 +26,5 @@ export interface IUser {
   modificationNotes: ModificationNote[];
   referrees?: string[];
   refId: string;
-  referrer?: string,
 }
 

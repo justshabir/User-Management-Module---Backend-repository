@@ -60,9 +60,6 @@ const schema = new Schema(
       type: Date,
     },
     modificationNotes: [ModificationNote],
-    referrer: {
-      type: String,
-      default: 'null'},
     refId: {
       type: String,
       required: [true, 'referral ID required'],

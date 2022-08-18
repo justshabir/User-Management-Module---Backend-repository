@@ -40,7 +40,7 @@ export class AuthController {
       const token = jwt.sign({ email }, secret);
 
         //checks for referrer id
-       this.userService.findRef(
+       this.userService.filterUser(
         { refId: refId}, (err: any, Ref: IUser ) => {   
               //if no refId or no valid refId user
               if(!Ref){
@@ -97,7 +97,6 @@ export class AuthController {
       }); 
     //if there's a refId/referrer then do this.
     } else{
-       const referrer = Ref.refId
     const userParams : IUser = {
         name: {
           firstName: firstName, 
@@ -106,7 +105,6 @@ export class AuthController {
         email: email,
         password: hashedPassword,
         confirmationCode: token,
-        referrer: referrer,
         refId: uuid(),
         modificationNotes: [
           {
@@ -139,7 +137,7 @@ export class AuthController {
               if (err) {
                 CommonService.mongoError(err, res)
               }
-              console.log(addRef)
+              // console.log(addRef)
            addRef.referrees.push(userData._id) 
            this.userService.updateUser(addRef, (err: any) => {
                 if (err) {

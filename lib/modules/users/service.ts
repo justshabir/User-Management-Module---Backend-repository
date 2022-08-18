@@ -18,8 +18,4 @@ export default class UserService {
     const query = { _id };
     Users.deleteOne(query, callback);
   }
-  public findRef(query: any, callback: any) {
-     Users.findOne(query, callback);
-}
-
 }
