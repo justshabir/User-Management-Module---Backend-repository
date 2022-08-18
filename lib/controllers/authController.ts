@@ -142,7 +142,7 @@ export class AuthController {
           if (updatedUserData) {
             return CommonService.successResponse(
               'Account verified',
-              { id: updatedUserData._id },
+              { id: updatedUserData?._id },
               res
             );
           } else return CommonService.failureResponse('Account Verification Failed', err, res);
@@ -152,7 +152,7 @@ export class AuthController {
   }
 
   public logoutUser(req: any, res: Response) {
-    this.userService.filterUser({ _id: req?.user.id }, (err: any, userData: any) => {
+    this.userService.filterUser({ _id: req?.user?.id }, (err: any, userData: any) => {
       if (userData) {
         userData.lastVisited = new Date();
         userData.save((err: any, updatedUserData: IUser) => {
