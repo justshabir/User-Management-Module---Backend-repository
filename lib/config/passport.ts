@@ -69,10 +69,9 @@ passport.use(
               lastName: givenName || displayName,
             },
             email: email,
-            source: 'google',
-            status: 'Active',
+            source: accountSourceEnum.GOOGLE,
+            status: accountStatusEnum.ACTIVE,
             refId: id,
-            profilePhoto: '',
             modificationNotes: [
               {
                 modifiedOn: new Date(Date.now()),
@@ -122,7 +121,7 @@ passport.use(
             email: email,
             source: accountSourceEnum.LINKEDIN,
             status: accountStatusEnum.ACTIVE,
-            profilePhoto: '',
+
             refId: id,
             modificationNotes: [
               {
@@ -172,7 +171,7 @@ passport.use(
             source: accountSourceEnum.MICROSOFT,
             status: accountStatusEnum.ACTIVE,
             refId: id,
-            profilePhoto: '',
+
             modificationNotes: [
               {
                 modifiedOn: new Date(Date.now()),
@@ -202,10 +201,14 @@ passport.serializeUser((user: IUser, done: any) => {
 
 passport.deserializeUser(async (id: number, done: any) => {
   const userFilter = { _id: id };
-  UserService.filterUser(userFilter, (err: any, user: IUser) => {
+  UserService.filterUser(userFilter, (err: any, user: any) => {
     if (err) {
       console.log('Passport serialization error', err);
     }
-    done(err, user);
+    user.populate('profilePhoto', (err: any, userData: any) => {
+      if (err) return console.log(err);
+      const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.image : '';
+      done(err, { ...userData._doc, profilePhoto });
+    });
   });
 });

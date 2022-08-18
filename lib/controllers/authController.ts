@@ -11,7 +11,6 @@ import { IConfirmationMail } from '../modules/mailer/model';
 import jwt from 'jsonwebtoken';
 import { accountStatusEnum } from '../utils/enums';
 import { uuid } from 'uuidv4';
-import { isRef } from 'joi';
 export class AuthController {
   private userService: UserService = new UserService();
   private mailService: MailerService = new MailerService();
@@ -44,7 +43,8 @@ export class AuthController {
         { refId: refId}, (err: any, Ref: IUser ) => {   
               //if no refId or no valid refId user
               if(!Ref){
-    const userParams : IUser = {
+      const userParams: IUser = {
+
         name: {
           firstName: firstName, 
           lastName: lastName,
@@ -61,7 +61,7 @@ export class AuthController {
           },
         ],
       };
-      
+
       this.userService.createUser(userParams, (err: any, userData: IUser) => {
         if (err) {
           if (err?.keyValue && err?.keyValue?.email) {
@@ -192,12 +192,16 @@ export class AuthController {
         );
       }
       const accessToken = authMiddleWare.createToken(user);
-      const { password, ...rest } = user._doc;
-      return CommonService.successResponse(
-        'Login Successful',
-        { user: { ...rest }, accessToken },
-        res
-      );
+      user.populate('profilePhoto', (err: any, userData: any) => {
+        if (err) return CommonService.mongoError(err, res);
+        const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.image : '';
+        const { password, ...rest } = user._doc;
+        return CommonService.successResponse(
+          'Successful',
+          { user: { ...rest, profilePhoto }, accessToken },
+          res
+        );
+      });
     })(req, res, next);
   }
 
