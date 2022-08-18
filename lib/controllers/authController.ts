@@ -14,7 +14,6 @@ import { uuid } from 'uuidv4';
 export class AuthController {
   private userService: UserService = new UserService();
   private mailService: MailerService = new MailerService();
-
   public loginSuccess(req: any, res: Response) {
     if (req?.user) {
       const accessToken = authMiddleWare.createToken(req.user);
