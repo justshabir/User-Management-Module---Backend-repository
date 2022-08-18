@@ -44,7 +44,6 @@ export class AuthController {
               //if no refId or no valid refId user
               if(!Ref){
       const userParams: IUser = {
-
         name: {
           firstName: firstName, 
           lastName: lastName,
@@ -158,7 +157,7 @@ export class AuthController {
               });
             });
           }) 
-       })//filter
+       })//
       }  
       })
    }
@@ -170,10 +169,6 @@ export class AuthController {
     }   
 }
   
-
-
-  
-
   public loginUser(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('local', function (err, user: IUser | any, info) {
       if (info && Object.keys(info).length > 0) {
