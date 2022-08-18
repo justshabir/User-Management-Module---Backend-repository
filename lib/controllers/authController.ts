@@ -29,8 +29,8 @@ export class AuthController {
   }
 
   public createUser(req: Request, res: Response) {
-    const { password, email, lastName, firstName, refId } = req.body;
-    if (firstName && lastName && email && password ) {
+    const { password, email, lastName, firstName, refId = '' } = req.body;
+    if (firstName && lastName && email && password) {
       const hashedPassword = cryptoJs.AES.encrypt(
         password,
         process.env.CRYPTO_JS_PASS_SEC
@@ -38,14 +38,9 @@ export class AuthController {
       const secret = email + '_' + new Date().getTime();
       const token = jwt.sign({ email }, secret);
 
-        //checks for referrer id
-       this.userService.filterUser(
-        { refId: refId}, (err: any, Ref: IUser ) => {   
-              //if no refId or no valid refId user
-              if(!Ref){
       const userParams: IUser = {
         name: {
-          firstName: firstName, 
+          firstName: firstName,
           lastName: lastName,
         },
         email: email,
@@ -73,75 +68,20 @@ export class AuthController {
             return CommonService.mongoError(err, res);
           }
         } else {
-          const mailParams: IConfirmationMail = {
-            name: userData?.name.firstName + ' ' + userData?.name.lastName,
-            confirmationCode: userData.confirmationCode,
-            email,
-          };
-          this.mailService
-            .sendAccountActivationRequest(mailParams)
-            .then((result) => {
-              return CommonService.successResponse(
-                'User created successfully',
-                { id: userData._id },
-                res
-              );
-            })
-            .catch((err) => {
-              this.userService.deleteUser(userData._id, () => {
-                return CommonService.failureResponse('Mailer Service error', err, res);
-              });
-            });    
-        } 
-      }); 
-    //if there's a refId/referrer then do this.
-    } else{
-    const userParams : IUser = {
-        name: {
-          firstName: firstName, 
-          lastName: lastName,
-        },
-        email: email,
-        password: hashedPassword,
-        confirmationCode: token,
-        refId: uuid(),
-        modificationNotes: [
-          {
-            modifiedOn: new Date(Date.now()),
-            modifiedBy: null,
-            modificationNote: 'New user created',
-          },
-        ],
-      };
-      
-      this.userService.createUser(userParams, (err: any, userData: IUser) => {
-        if (err) {
-          if (err?.keyValue && err?.keyValue?.email) {
-            CommonService.failureResponse(
-              `User already exist`,
-              { username: err?.keyValue?.email },
-              res
-            );
-          } else {
-            return CommonService.mongoError(err, res);
-          }
-        } else {
-          const mailParams: IConfirmationMail = {
-            name: userData?.name.firstName + ' ' + userData?.name.lastName,
-            confirmationCode: userData.confirmationCode,
-            email,
-          };
-      
-       this.userService.filterUser({refId: refId}, (err: any, addRef: IUser )=>{
-              if (err) {
-                CommonService.mongoError(err, res)
+          // If the exist a refId, find the user with this refId and update the referrees property by adding the new user's id
+          if (refId && userData) {
+            this.userService.filterUser({ refId }, (err: any, RefUser: any) => {
+              if (RefUser) {
+                RefUser.referrees.push(userData._id);
+                RefUser.save();
               }
-              // console.log(addRef)
-           addRef.referrees.push(userData._id) 
-           this.userService.updateUser(addRef, (err: any) => {
-                if (err) {
-                  CommonService.mongoError(err, res);          
-                }
+            });
+          }
+          const mailParams: IConfirmationMail = {
+            name: userData?.name.firstName + ' ' + userData?.name.lastName,
+            confirmationCode: userData.confirmationCode,
+            email,
+          };
           this.mailService
             .sendAccountActivationRequest(mailParams)
             .then((result) => {
@@ -156,19 +96,14 @@ export class AuthController {
                 return CommonService.failureResponse('Mailer Service error', err, res);
               });
             });
-          }) 
-       })//
-      }  
-      })
-   }
-  })
-    
-}else {
+        }
+      });
+    } else {
       // error response if some fields are missing in request body
       return CommonService.insufficientParameters(res);
-    }   
-}
-  
+    }
+  }
+
   public loginUser(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('local', function (err, user: IUser | any, info) {
       if (info && Object.keys(info).length > 0) {
