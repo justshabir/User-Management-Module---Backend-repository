@@ -10,7 +10,7 @@ import cryptoJs from 'crypto-js';
 import { IConfirmationMail } from '../modules/mailer/model';
 import jwt from 'jsonwebtoken';
 import { accountStatusEnum } from '../utils/enums';
-import { uuid } from 'uuidv4';
+import { v4 as uuid } from 'uuid';
 export class AuthController {
   private userService: UserService = new UserService();
   private mailService: MailerService = new MailerService();
