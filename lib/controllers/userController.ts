@@ -65,9 +65,9 @@ export class UserController {
             name:
               firstName || lastName
                 ? {
-                  firstName: firstName ? firstName : userData.name.firstName,
-                  lastName: firstName ? lastName : userData.name.lastName,
-                }
+                    firstName: firstName ? firstName : userData.name.firstName,
+                    lastName: firstName ? lastName : userData.name.lastName,
+                  }
                 : userData.name,
             phoneNumber: phoneNumber ? phoneNumber : userData.phoneNumber,
             refId: userData.refId,
@@ -237,7 +237,7 @@ export class UserController {
                 'Request successful. Kindly follow the instructions sent to your mail to reset your password',
                 {
                   id: updatedData._id,
-                  email: updatedData.email
+                  email: updatedData.email,
                 },
                 res
               );
@@ -246,16 +246,21 @@ export class UserController {
               updatedData.resetPasswordToken = null;
               updatedData.resetPasswordExpires = null;
               this.userService.updateUser(updatedData, (err: any) => {
-                return CommonService.failureResponse('Mailer Service Error', err, res);
+                return CommonService.failureResponse(
+                  'Mailer Service Error. Retry shortly',
+                  err,
+                  res
+                );
               });
             });
         }
       });
-    })
+    });
   }
   public resetPassword(req: Request, res: Response) {
     const { token, password } = req.body;
-    if (!token || !password) return CommonService.failureResponse('No token or password provided', null, res)
+    if (!token || !password)
+      return CommonService.failureResponse('No token or password provided', null, res);
     this.userService.filterUser(
       {
         resetPasswordToken: token,
@@ -278,10 +283,14 @@ export class UserController {
           if (err) {
             return CommonService.mongoError(err, res);
           } else {
-            return CommonService.successResponse('Password reset successful', {
-              id: userData._id,
-              email: userData.email
-            }, res);
+            return CommonService.successResponse(
+              'Password reset successful',
+              {
+                id: userData._id,
+                email: userData.email,
+              },
+              res
+            );
           }
         });
       }
