@@ -65,7 +65,7 @@ const schema = new Schema(
       required: [true, 'referral ID required'],
       require: true,
     },
-    referrals: [
+    referrees: [
       {
         type: Schema.Types.ObjectId,
         ref: 'users',

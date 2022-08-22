@@ -21,7 +21,6 @@ export default class UserService {
       callback
     );
   }
-
   public deleteUser(_id: string, callback?: any) {
     const query = { _id };
     Users.deleteOne(query, callback);

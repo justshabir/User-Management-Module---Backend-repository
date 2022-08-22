@@ -32,7 +32,7 @@ export class AuthController {
   }
 
   public createUser(req: Request, res: Response) {
-    const { password, email, lastName, firstName } = req.body;
+    const { password, email, lastName, firstName, refId = '' } = req.body;
     if (firstName && lastName && email && password) {
       const hashedPassword = cryptoJs.AES.encrypt(
         password,
@@ -40,6 +40,7 @@ export class AuthController {
       ).toString();
       const secret = email + '_' + new Date().getTime();
       const token = jwt.sign({ email }, secret);
+
       const userParams: IUser = {
         name: {
           firstName: firstName,
@@ -57,6 +58,7 @@ export class AuthController {
           },
         ],
       };
+
       this.userService.createUser(userParams, (err: any, userData: IUser) => {
         if (err) {
           if (err?.keyValue && err?.keyValue?.email) {
@@ -69,6 +71,15 @@ export class AuthController {
             return CommonService.mongoError(err, res);
           }
         } else {
+          // If the exist a refId, find the user with this refId and update the referrees property by adding the new user's id
+          if (refId && userData) {
+            this.userService.filterUser({ refId }, (err: any, RefUser: any) => {
+              if (RefUser) {
+                RefUser.referrees.push(userData._id);
+                RefUser.save();
+              }
+            });
+          }
           const permissionParams: IUserPermissions = {
             user: userData._id,
             modificationNotes: [
@@ -90,7 +101,6 @@ export class AuthController {
                 confirmationCode: userData.confirmationCode,
                 email,
               };
-
               this.mailService
                 .sendAccountActivationRequest(mailParams)
                 .then((result) => {
@@ -163,7 +173,7 @@ export class AuthController {
           if (updatedUserData) {
             return CommonService.successResponse(
               'Account verified',
-              { id: updatedUserData._id },
+              { id: updatedUserData?._id },
               res
             );
           } else return CommonService.failureResponse('Account Verification Failed', err, res);
@@ -173,7 +183,7 @@ export class AuthController {
   }
 
   public logoutUser(req: any, res: Response) {
-    this.userService.filterUser({ _id: req?.user.id }, (err: any, userData: any) => {
+    this.userService.filterUser({ _id: req?.user?.id }, (err: any, userData: any) => {
       if (userData) {
         userData.lastVisited = new Date();
         userData.save((err: any, updatedUserData: IUser) => {

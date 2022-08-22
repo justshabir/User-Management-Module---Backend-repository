@@ -74,26 +74,24 @@ export default class MailerService {
     }
   }
 
-  public sendPasswordReset(params: IForgotPassword) {
-    return new Promise((resolve, reject) => {
-      try {
-        const html = forgotPassword(params.token, this.client_base_url, params.name);
-        this.transporter.verify();
-        this.transporter.sendMail(
-          {
-            from: this.user,
-            to: params.email,
-            subject: PASSWORD_RESET_LINK,
-            html: html,
-          },
-          (error) => {
-            if (error) reject(error);
-            else resolve(true);
-          }
-        );
-      } catch (error) {
-        reject(error);
-      }
-    });
+  public async sendPasswordReset(params: IForgotPassword) {
+    try {
+      const html = forgotPassword(params.token, this.client_base_url, params.name);
+      await this.transporter.verify();
+      this.transporter.sendMail(
+        {
+          from: this.user,
+          to: params.email,
+          subject: PASSWORD_RESET_LINK,
+          html: html,
+        },
+        (error) => {
+          if (error) throw new Error(error.toString());
+          else return true;
+        }
+      );
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 }
