@@ -1,9 +1,11 @@
 import { Application, Request, Response } from 'express';
 import AuthMiddleWare from '../middlewares/auth';
 import { UserController } from '../controllers/userController';
+import { UserPermissionsController } from '../controllers/userPermissionsController';
 
 export class UserRoutes {
   private userController: UserController = new UserController();
+  private userPermissionsController: UserPermissionsController = new UserPermissionsController();
   public route(app: Application) {
     app.put('/api/user/reset-password', (req: Request, res: Response) => {
       this.userController.resetPassword(req, res);
@@ -44,5 +46,17 @@ export class UserRoutes {
     app.post('/api/user/forgot-password', (req: Request, res: Response) => {
       this.userController.forgotPassword(req, res);
     });
+
+    app.patch('/api/user/reset-password', (req: Request, res: Response) => {
+      this.userController.resetPassword(req, res);
+    });
+
+    app.get('/api/user/:id/permission', AuthMiddleWare.verifyTokenAndAuthorization, (req: Request, res: Response) => {
+      this.userPermissionsController.getUserPermissions(req, res);
+    })
+
+    app.patch('/api/user/:id/permission', AuthMiddleWare.verifyTokenAndAuthorization, (req: Request, res: Response) => {
+      this.userPermissionsController.updateUserPermissions(req, res);
+    })
   }
 }
