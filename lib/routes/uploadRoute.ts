@@ -24,8 +24,8 @@ export class UploadRoutes {
     app.post(
       '/api/upload/profile-photo',
       AuthenticationMiddleWare.verifyToken,
-      function (req, res, next) {
-        new UploadRoutes().upload(req, res, function (err) {
+       (req, res, next)  => {
+       this.upload(req, res,  (err) =>  {
           if (err) {
             return CommonService.failureResponse('Error uploading file.', err, res);
           }
