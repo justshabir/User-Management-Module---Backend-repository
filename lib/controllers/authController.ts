@@ -96,43 +96,25 @@ export class AuthController {
                 return CommonService.mongoError(err, res);
               });
             } else {
-              const permissionParams: IUserPermissions = {
-                user: userData._id,
-                modificationNotes: [
-                  {
-                    modifiedOn: new Date(Date.now()),
-                    modifiedBy: null,
-                    modificationNote: 'New user permissions created',
-                  },
-                ],
-              }
-              this.userPermissionsService.createUserPermissions(permissionParams, (err: any) => {
-                if (err) {
+              const mailParams: IConfirmationMail = {
+                name: userData?.name.firstName + ' ' + userData?.name.lastName,
+                confirmationCode: userData.confirmationCode,
+                email,
+              };
+              this.mailService
+                .sendAccountActivationRequest(mailParams)
+                .then((result) => {
+                  return CommonService.successResponse(
+                    'User created successfully',
+                    { id: userData._id },
+                    res
+                  );
+                })
+                .catch((err) => {
                   this.userService.deleteUser(userData._id, () => {
-                    return CommonService.mongoError(err, res);
+                    return CommonService.failureResponse('Mailer Service error', err, res);
                   });
-                } else {
-                  const mailParams: IConfirmationMail = {
-                    name: userData?.name.firstName + ' ' + userData?.name.lastName,
-                    confirmationCode: userData.confirmationCode,
-                    email,
-                  };
-                  this.mailService
-                    .sendAccountActivationRequest(mailParams)
-                    .then((result) => {
-                      return CommonService.successResponse(
-                        'User created successfully',
-                        { id: userData._id },
-                        res
-                      );
-                    })
-                    .catch((err) => {
-                      this.userService.deleteUser(userData._id, () => {
-                        return CommonService.failureResponse('Mailer Service error', err, res);
-                      });
-                    });
-                }
-              })
+                });
             }
           })
         }
