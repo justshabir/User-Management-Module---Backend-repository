@@ -7,9 +7,6 @@ export class UserRoutes {
   private userController: UserController = new UserController();
   private userPermissionsController: UserPermissionsController = new UserPermissionsController();
   public route(app: Application) {
-    app.put('/api/user/reset-password', (req: Request, res: Response) => {
-      this.userController.resetPassword(req, res);
-    });
     app.get(
       '/api/user/:id',
       AuthMiddleWare.verifyTokenAndAuthorization,
@@ -17,7 +14,7 @@ export class UserRoutes {
         this.userController.getUser(req, res);
       }
     );
-    app.put(
+    app.patch(
       '/api/user/:id/password-update',
       AuthMiddleWare.verifyToken,
       (req: Request, res: Response) => {
@@ -25,7 +22,7 @@ export class UserRoutes {
       }
     );
 
-    app.put('/api/user/:id', AuthMiddleWare.verifyToken, (req: Request, res: Response) => {
+    app.patch('/api/user/:id', AuthMiddleWare.verifyToken, (req: Request, res: Response) => {
       this.userController.updateUser(req, res);
     });
     app.get(
@@ -51,12 +48,20 @@ export class UserRoutes {
       this.userController.resetPassword(req, res);
     });
 
-    app.get('/api/user/:id/permission', AuthMiddleWare.verifyTokenAndAuthorization, (req: Request, res: Response) => {
-      this.userPermissionsController.getUserPermissions(req, res);
-    })
+    app.get(
+      '/api/user/:id/permission',
+      AuthMiddleWare.verifyTokenAndAuthorization,
+      (req: Request, res: Response) => {
+        this.userPermissionsController.getUserPermissions(req, res);
+      }
+    );
 
-    app.patch('/api/user/:id/permission', AuthMiddleWare.verifyTokenAndAuthorization, (req: Request, res: Response) => {
-      this.userPermissionsController.updateUserPermissions(req, res);
-    })
+    app.patch(
+      '/api/user/:id/permission',
+      AuthMiddleWare.verifyTokenAndAuthorization,
+      (req: Request, res: Response) => {
+        this.userPermissionsController.updateUserPermissions(req, res);
+      }
+    );
   }
 }

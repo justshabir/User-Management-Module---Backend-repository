@@ -41,7 +41,7 @@ class App {
           process.env.NODE_ENV !== 'development'
             ? process.env.PROD_CLIENT_BASE_URL
             : 'http://localhost:3000',
-        methods: 'GET,POST,PUT,DELETE',
+        methods: 'GET,POST,PUT,DELETE,PATCH',
         credentials: true,
       })
     );
