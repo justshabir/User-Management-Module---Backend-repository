@@ -11,9 +11,13 @@ import { IConfirmationMail } from '../modules/mailer/model';
 import jwt from 'jsonwebtoken';
 import { accountStatusEnum } from '../utils/enums';
 import { v4 as uuid } from 'uuid';
+import UserPermissionsService from '../modules/userPermissions/service';
+import { IUserPermissions } from '../modules/userPermissions/model';
 export class AuthController {
   private userService: UserService = new UserService();
   private mailService: MailerService = new MailerService();
+  private userPermissionsService: UserPermissionsService = new UserPermissionsService();
+
   public loginSuccess(req: any, res: Response) {
     if (req?.user) {
       const accessToken = authMiddleWare.createToken(req.user);
@@ -76,25 +80,43 @@ export class AuthController {
               }
             });
           }
-          const mailParams: IConfirmationMail = {
-            name: userData?.name.firstName + ' ' + userData?.name.lastName,
-            confirmationCode: userData.confirmationCode,
-            email,
-          };
-          this.mailService
-            .sendAccountActivationRequest(mailParams)
-            .then((result) => {
-              return CommonService.successResponse(
-                'User created successfully',
-                { id: userData._id },
-                res
-              );
-            })
-            .catch((err) => {
+          const permissionParams: IUserPermissions = {
+            user: userData._id,
+            modificationNotes: [
+              {
+                modifiedOn: new Date(Date.now()),
+                modifiedBy: null,
+                modificationNote: 'New user permissions created',
+              },
+            ],
+          }
+          this.userPermissionsService.createUserPermissions(permissionParams, (err: any) => {
+            if (err) {
               this.userService.deleteUser(userData._id, () => {
-                return CommonService.failureResponse('Mailer Service error', err, res);
+                return CommonService.mongoError(err, res);
               });
-            });
+            } else {
+              const mailParams: IConfirmationMail = {
+                name: userData?.name.firstName + ' ' + userData?.name.lastName,
+                confirmationCode: userData.confirmationCode,
+                email,
+              };
+              this.mailService
+                .sendAccountActivationRequest(mailParams)
+                .then((result) => {
+                  return CommonService.successResponse(
+                    'User created successfully',
+                    { id: userData._id },
+                    res
+                  );
+                })
+                .catch((err) => {
+                  this.userService.deleteUser(userData._id, () => {
+                    return CommonService.failureResponse('Mailer Service error', err, res);
+                  });
+                });
+            }
+          })
         }
       });
     } else {
