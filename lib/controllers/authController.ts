@@ -18,7 +18,7 @@ export class AuthController {
   private mailService: MailerService = new MailerService();
   private userPermissionsService: UserPermissionsService = new UserPermissionsService();
 
-  public loginSuccess(req: any, res: Response) {
+  public loginSuccess(req: Request, res: Response) {
     if (req?.user) {
       const accessToken = authMiddleWare.createToken(req.user);
       return CommonService.successResponse('Successful', { user: req.user, accessToken }, res);
@@ -89,7 +89,7 @@ export class AuthController {
                 modificationNote: 'New user permissions created',
               },
             ],
-          }
+          };
           this.userPermissionsService.createUserPermissions(permissionParams, (err: any) => {
             if (err) {
               this.userService.deleteUser(userData._id, () => {
@@ -116,7 +116,7 @@ export class AuthController {
                   });
                 });
             }
-          })
+          });
         }
       });
     } else {
@@ -182,7 +182,7 @@ export class AuthController {
     );
   }
 
-  public logoutUser(req: any, res: Response) {
+  public logoutUser(req: Request, res: Response) {
     this.userService.filterUser({ _id: req?.user?.id }, (err: any, userData: any) => {
       if (userData) {
         userData.lastVisited = new Date();

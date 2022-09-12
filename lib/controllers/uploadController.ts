@@ -5,7 +5,7 @@ import { IUploadProfileImage } from '../modules/upload/model';
 import UploadService from '../modules/upload/service';
 export class UploadController {
   private UploadService: UploadService = new UploadService();
-  public uploadProfileImage(req: any, res: Response) {
+  public uploadProfileImage(req: Request, res: Response) {
     if (!req.file) return CommonService.failureResponse('Please Upload an image', null, res);
     const image = {
       data: fs.readFileSync(req.file.path),

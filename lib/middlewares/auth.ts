@@ -4,7 +4,7 @@ import CommonService from '../modules/common/service';
 import { IUser } from '../modules/users/model';
 
 class AuthMiddleWare {
-  public static createToken(user: IUser) {
+  public static createToken(user: Partial<IUser>) {
     const accessToken = jwt.sign(
       {
         id: user._id,
@@ -29,7 +29,7 @@ class AuthMiddleWare {
       return CommonService.unAuthorizedResponse('You are not authenticated!', res);
     }
   }
-  public static verifyTokenAndAuthorization(req: any, res: Response, next: NextFunction) {
+  public static verifyTokenAndAuthorization(req: Request, res: Response, next: NextFunction) {
     AuthMiddleWare.verifyToken(req, res, () => {
       if (req.user?.id === req.params.id || req.user?.isAdmin) {
         next();
@@ -41,7 +41,7 @@ class AuthMiddleWare {
       }
     });
   }
-  public static verifyTokenAndAdmin(req: any, res: Response, next: NextFunction) {
+  public static verifyTokenAndAdmin(req: Request, res: Response, next: NextFunction) {
     AuthMiddleWare.verifyToken(req, res, () => {
       if (req.user?.isAdmin) {
         next();
