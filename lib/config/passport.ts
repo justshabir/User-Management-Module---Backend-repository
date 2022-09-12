@@ -110,6 +110,7 @@ passport.use(
       const familyName = profile.name?.familyName;
       const givenName = profile.name?.givenName;
       const profilePhoto = profile.photos[0]?.value;
+      // if profilePhot exist then save it to db
 
       UserService.filterUser({ email }, (err: any, currentUser: IUser) => {
         if (!currentUser) {
@@ -205,6 +206,7 @@ passport.deserializeUser(async (id: number, done: any) => {
     if (err) {
       console.log('Passport serialization error', err);
     }
+    // THIS CAN BE SIMPLIFY BY POPULATING THE USER DURING THE FILTER
     user.populate('profilePhoto', (err: any, userData: any) => {
       if (err) return console.log(err);
       const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.image : '';
