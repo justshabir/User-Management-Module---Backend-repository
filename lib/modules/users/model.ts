@@ -1,4 +1,3 @@
-
 import { ModificationNote } from '../common/model';
 
 export interface IUser {
@@ -27,4 +26,3 @@ export interface IUser {
   referrees?: string[];
   refId: string;
 }
-
