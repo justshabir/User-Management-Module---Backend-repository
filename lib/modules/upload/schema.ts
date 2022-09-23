@@ -2,13 +2,9 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const imageSchema = new Schema(
   {
-    image: {
-      data: Buffer,
-      contentType: String,
-    },
+    imageUrl: { type: String, required: true },
+    key: { type: String, required: true, unique: true },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 export const Image = mongoose.model('Image', imageSchema);
