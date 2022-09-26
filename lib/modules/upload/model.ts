@@ -1,7 +1,5 @@
 export interface IUploadProfileImage {
   _id?: string;
-  image: {
-    data: Buffer;
-    contentType: string;
-  };
+  imageUrl: string;
+  key: string;
 }
