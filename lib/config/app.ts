@@ -37,10 +37,10 @@ class App {
   private config(): void {
     this.app.use(
       cors({
-        origin: '*',
-        // process.env.NODE_ENV !== 'development'
-        //   ? process.env.PROD_CLIENT_BASE_URL
-        //   : 'http://localhost:3000',
+        origin:
+          process.env.NODE_ENV !== 'development'
+            ? process.env.PROD_CLIENT_BASE_URL
+            : 'http://localhost:3000',
         methods: 'GET,POST,PUT,DELETE',
         credentials: true,
       })
