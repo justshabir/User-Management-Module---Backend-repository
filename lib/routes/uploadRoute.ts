@@ -103,6 +103,5 @@ export class UploadRoutes {
         this.uploadController.updateImageUrl(req, res);
       }
     );
-    
   }
 }
