@@ -86,5 +86,23 @@ export class UploadRoutes {
         this.uploadController.deleteImage(req, res);
       }
     );
+
+    app.post(
+      '/api/upload/image-url',
+      AuthMiddleWare.verifyTokenAndAdmin,
+      (req: Request, res: Response) => {
+        this.uploadController.uploadImageUrl(req, res);
+      }
+    );
+
+    app.patch(
+      '/api/upload/image-url/:id',
+      AuthMiddleWare.verifyTokenAndAdmin,
+      ValidatorMiddleware(uploadValidatorSchema.veryifyParamsId, 'params'),
+      (req: Request, res: Response) => {
+        this.uploadController.updateImageUrl(req, res);
+      }
+    );
+    
   }
 }

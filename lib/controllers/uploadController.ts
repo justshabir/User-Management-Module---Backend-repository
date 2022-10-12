@@ -45,11 +45,15 @@ export class UploadController {
       } else if (!imageData) {
         CommonService.failureResponse('Cannot find Image!', null, res);
       } else {
-        this.s3Params.Key = imageData.key;
-        this.S3.getObject(this.s3Params, (err: any, result: any) => {
-          if (err) return CommonService.failureResponse('Cant Load Image!', null, res);
-          CommonService.successResponse('Image Fetched Successfully!', result, res);
-        });
+        if(imageData.key === 'none'){
+          CommonService.successResponse('Image Fetched Successfully!', imageData, res);
+        } else {
+          this.s3Params.Key = imageData.key;
+          this.S3.getObject(this.s3Params, (err: any, result: any) => {
+            if (err) return CommonService.failureResponse('Cant Load Image!', null, res);
+            CommonService.successResponse('Image Fetched Successfully!', result, res);
+          });
+        }
       }
     });
   }
@@ -95,14 +99,82 @@ export class UploadController {
     this.uploadService.filterImage(query, (err: any, imageData: IUploadProfileImage) => {
       if (err) return CommonService.mongoError(err, res);
       if (!imageData) return CommonService.failureResponse('Cannot get Image!', null, res);
-      this.s3Params.Key = imageData.key;
-      this.S3.deleteObject(this.s3Params, (err: any) => {
-        if (err) return CommonService.failureResponse('Unable to Delete File!', null, res);
-        this.uploadService.deleteImage(query, (err: any, data: any) => {
-          if (err) return CommonService.mongoError(err, res);
-          if (data) return CommonService.successResponse('Image Deleted Successfully', null, res);
-        });
-      });
+      if(imageData.key === 'none'){
+          this.uploadService.deleteImage(query, (err: any, data: any) => {
+            if (err) return CommonService.mongoError(err, res);
+            if (data) return CommonService.successResponse('Image Deleted Successfully', null, res);
+          });
+        } else {
+          this.s3Params.Key = imageData.key;
+          this.S3.deleteObject(this.s3Params, (err: any) => {
+            if (err) return CommonService.failureResponse('Unable to Delete File!', null, res);
+            this.uploadService.deleteImage(query, (err: any, data: any) => {
+              if (err) return CommonService.mongoError(err, res);
+              if (data) return CommonService.successResponse('Image Deleted Successfully', null, res);
+            });
+          });
+        }
     });
+  }
+
+  public uploadImageUrl(req: Request, res: Response) {
+    const imageUrl = req.body.imageUrl;
+    if (imageUrl) {
+      const imageParams = {
+        imageUrl: imageUrl,
+        key: 'none'
+      };
+
+      this.uploadService.uploadPhoto(
+        imageParams,
+        (err: any, uploadedImage: IUploadProfileImage) => {
+          if (err) return CommonService.mongoError(err, res);
+          if (!uploadedImage) {
+            return CommonService.failureResponse('Unable to Upload Image', null, res);
+          }
+          return CommonService.successResponse(
+            'Image Uploaded Successfully!',
+            { imageId: uploadedImage?._id },
+            res
+          );
+        }
+      );
+    } else {
+      return CommonService.insufficientParameters(res);
+    }
+    
+  }
+
+   public updateImageUrl(req: Request, res: Response) {
+    const imageUrl = req.body.imageUrl;
+    const { id } = req.params;
+    if (imageUrl) {
+      const query = { _id: id };
+      this.uploadService.filterImage(query, (err: any, imageData: IUploadProfileImage) => {
+        if (err) return CommonService.mongoError(err, res);
+        if (!imageData) return CommonService.failureResponse('Cannot get Image!', null, res);
+
+        const updateParams = { imageUrl: imageUrl };
+        this.uploadService.updateImage(
+          query,
+          updateParams,
+          (err: any, updatedImage: IUploadProfileImage) => {
+            if (err) return CommonService.mongoError(err, res);
+            if (updatedImage) {
+              return CommonService.successResponse(
+                'Image Updated Successfully!',
+                { imageId: updatedImage?._id },
+                res
+              );
+            } else {
+              return CommonService.failureResponse('Failed to Update Image!', null, res);
+            }
+          }
+        );
+      });
+    } else {
+      return CommonService.insufficientParameters(res);
+    }
+    
   }
 }
