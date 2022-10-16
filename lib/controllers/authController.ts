@@ -189,7 +189,7 @@ export class AuthController {
         userData.save((err: any, updatedUserData: IUser) => {
           return CommonService.successResponse(
             'Logout successfully',
-            { id: updatedUserData._id },
+            { id: updatedUserData?._id },
             res
           );
         });
