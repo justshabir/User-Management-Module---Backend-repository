@@ -319,7 +319,7 @@ passport.deserializeUser(async (id: number, done: any) => {
     // THIS CAN BE SIMPLIFY BY POPULATING THE USER DURING THE FILTER
     user.populate('profilePhoto', (err: any, userData: any) => {
       if (err) return console.log(err);
-      const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.image : '';
+      const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.imageUrl : '';
       done(err, { ...userData._doc, profilePhoto });
     });
   });

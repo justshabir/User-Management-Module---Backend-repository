@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { accountSourceEnum, accountStatusEnum } from 'utils/enums';
 import { ModificationNote } from '../common/model';
 const { Schema } = mongoose;
 
@@ -45,13 +46,17 @@ const schema = new Schema(
       type: Date,
       default: null,
     },
-    status: { type: String, enum: ['Pending', 'Active', 'Suspended'], default: 'Pending' },
+    status: {
+      type: String,
+      enum: [...Object.values(accountStatusEnum)],
+      default: accountStatusEnum.PENDING,
+    },
     confirmationCode: { type: String },
     profilePhoto: { type: Schema.Types.ObjectId, ref: 'Image' },
     source: {
       type: String,
-      enum: ['local', 'google', 'linkedin', 'microsoft'],
-      default: 'local',
+      enum: [...Object.values(accountSourceEnum)],
+      default: accountSourceEnum.LOCAL,
     },
     resetPasswordToken: {
       type: String,
