@@ -5,13 +5,16 @@ import MicrosoftStrategy from 'passport-microsoft';
 import LocalStrategy from 'passport-local';
 import dotenv from 'dotenv';
 import { IUser } from '../modules/users/model';
+import { IUploadProfileImage } from '../modules/upload/model';
 import userService from '../modules/users/service';
+import uploadService from '../modules/upload/service';
 import { accountSourceEnum, accountStatusEnum } from '../utils/enums';
 import cryptoJs from 'crypto-js';
 
 dotenv.config();
 
 const UserService = new userService();
+const UploadService = new uploadService();
 
 passport.use(
   new LocalStrategy.Strategy(async function (username: string, password: string, done: any) {
@@ -59,37 +62,72 @@ passport.use(
       const displayName = profile.displayName;
       const familyName = profile.name?.familyName;
       const givenName = profile.name?.givenName;
-      const profilePhoto = profile.photos[0]?.value;
+      let profileImageId: any;
 
+      // Upload the image and save the imageId to the DB
       UserService.filterUser({ email }, (err: any, currentUser: IUser) => {
         if (!currentUser) {
-          const userParams: IUser = {
-            name: {
-              firstName: familyName || givenName,
-              lastName: givenName || displayName,
-            },
-            email: email,
-            source: accountSourceEnum.GOOGLE,
-            status: accountStatusEnum.ACTIVE,
-            refId: id,
-            modificationNotes: [
-              {
-                modifiedOn: new Date(Date.now()),
-                modifiedBy: null,
-                modificationNote: 'New user created',
+          if (profile.photos?.[0]?.value) {
+            const imageParams = {
+              imageUrl: profile.photos[0]?.value,
+            };
+            UploadService.uploadPhoto(
+              imageParams,
+              (err: any, uploadedImage: IUploadProfileImage) => {
+                profileImageId = uploadedImage?._id;
+                const userParams: IUser = {
+                  name: {
+                    firstName: familyName || givenName,
+                    lastName: givenName || displayName,
+                  },
+                  email: email,
+                  profilePhoto: profileImageId,
+                  source: accountSourceEnum.GOOGLE,
+                  status: accountStatusEnum.ACTIVE,
+                  refId: id,
+                  modificationNotes: [
+                    {
+                      modifiedOn: new Date(Date.now()),
+                      modifiedBy: null,
+                      modificationNote: 'New user created',
+                    },
+                  ],
+                };
+                return UserService.createUser(userParams, (err, userData: IUser) => {
+                  return done(err, userData);
+                });
+              }
+            );
+          } else {
+            const userParams: IUser = {
+              name: {
+                firstName: familyName || givenName,
+                lastName: givenName || displayName,
               },
-            ],
-          };
-          return UserService.createUser(userParams, (err, userData: IUser) => {
-            return done(err, userData);
-          });
-        } else if (currentUser.source != 'google') {
+              email: email,
+              source: accountSourceEnum.GOOGLE,
+              status: accountStatusEnum.ACTIVE,
+              refId: id,
+              modificationNotes: [
+                {
+                  modifiedOn: new Date(Date.now()),
+                  modifiedBy: null,
+                  modificationNote: 'New user created',
+                },
+              ],
+            };
+            return UserService.createUser(userParams, (err, userData: IUser) => {
+              return done(err, userData);
+            });
+          }
+        } else if (currentUser.source !== accountSourceEnum.GOOGLE) {
           return done(err, false, {
             message: `You have previously signed up with a different signin method`,
           });
+        } else {
+          currentUser.lastVisited = new Date();
+          return done(err, currentUser);
         }
-        currentUser.lastVisited = new Date();
-        return done(err, currentUser);
       });
     }
   )
@@ -109,44 +147,81 @@ passport.use(
       const displayName = profile.displayName;
       const familyName = profile.name?.familyName;
       const givenName = profile.name?.givenName;
-      const profilePhoto = profile.photos[0]?.value;
-      // if profilePhot exist then save it to db
+      let profileImageId: any;
+
+      // Upload the image and save the imageId to the DB
 
       UserService.filterUser({ email }, (err: any, currentUser: IUser) => {
         if (!currentUser) {
-          const userParams: IUser = {
-            name: {
-              firstName: familyName || givenName,
-              lastName: givenName || displayName,
-            },
-            email: email,
-            source: accountSourceEnum.LINKEDIN,
-            status: accountStatusEnum.ACTIVE,
+          if (profile.photos?.[0]?.value) {
+            const imageParams = {
+              imageUrl: profile.photos[0]?.value,
+            };
+            UploadService.uploadPhoto(
+              imageParams,
+              (err: any, uploadedImage: IUploadProfileImage) => {
+                profileImageId = uploadedImage?._id;
+                const userParams: IUser = {
+                  name: {
+                    firstName: familyName || givenName,
+                    lastName: givenName || displayName,
+                  },
+                  email: email,
+                  profilePhoto: profileImageId,
+                  source: accountSourceEnum.LINKEDIN,
+                  status: accountStatusEnum.ACTIVE,
 
-            refId: id,
-            modificationNotes: [
-              {
-                modifiedOn: new Date(Date.now()),
-                modifiedBy: null,
-                modificationNote: 'New user created',
+                  refId: id,
+                  modificationNotes: [
+                    {
+                      modifiedOn: new Date(Date.now()),
+                      modifiedBy: null,
+                      modificationNote: 'New user created',
+                    },
+                  ],
+                };
+                return UserService.createUser(userParams, (err: any, userData: IUser) => {
+                  return done(err, userData);
+                });
+              }
+            );
+          } else {
+            const userParams: IUser = {
+              name: {
+                firstName: familyName || givenName,
+                lastName: givenName || displayName,
               },
-            ],
-          };
-          return UserService.createUser(userParams, (err: any, userData: IUser) => {
-            return done(err, userData);
-          });
+              email: email,
+              source: accountSourceEnum.LINKEDIN,
+              status: accountStatusEnum.ACTIVE,
+
+              refId: id,
+              modificationNotes: [
+                {
+                  modifiedOn: new Date(Date.now()),
+                  modifiedBy: null,
+                  modificationNote: 'New user created',
+                },
+              ],
+            };
+            return UserService.createUser(userParams, (err: any, userData: IUser) => {
+              return done(err, userData);
+            });
+          }
         }
         if (currentUser.source != accountSourceEnum.LINKEDIN) {
           return done(err, false, {
             message: `You have previously signed up with a different signin method`,
           });
+        } else {
+          currentUser.lastVisited = new Date();
+          return done(null, currentUser);
         }
-        currentUser.lastVisited = new Date();
-        return done(null, currentUser);
       });
     }
   )
 );
+
 passport.use(
   new MicrosoftStrategy.Strategy(
     {
@@ -161,37 +236,75 @@ passport.use(
       const displayName = profile.displayName;
       const familyName = profile.name?.familyName;
       const givenName = profile.name?.givenName;
+      let profileImageId: any;
+
+      // Upload the image and save the imageId to the DB
       UserService.filterUser({ email }, (err: any, currentUser: IUser) => {
         if (!currentUser) {
-          const userParams: IUser = {
-            name: {
-              firstName: familyName || givenName,
-              lastName: givenName || displayName,
-            },
-            email: email,
-            source: accountSourceEnum.MICROSOFT,
-            status: accountStatusEnum.ACTIVE,
-            refId: id,
+          if (profile.photos?.[0]?.value) {
+            const imageParams = {
+              imageUrl: profile.photos[0]?.value,
+            };
+            UploadService.uploadPhoto(
+              imageParams,
+              (err: any, uploadedImage: IUploadProfileImage) => {
+                profileImageId = uploadedImage?._id;
+                const userParams: IUser = {
+                  name: {
+                    firstName: familyName || givenName,
+                    lastName: givenName || displayName,
+                  },
+                  email: email,
+                  profilePhoto: profileImageId,
+                  source: accountSourceEnum.MICROSOFT,
+                  status: accountStatusEnum.ACTIVE,
+                  refId: id,
 
-            modificationNotes: [
-              {
-                modifiedOn: new Date(Date.now()),
-                modifiedBy: null,
-                modificationNote: 'New user created',
+                  modificationNotes: [
+                    {
+                      modifiedOn: new Date(Date.now()),
+                      modifiedBy: null,
+                      modificationNote: 'New user created',
+                    },
+                  ],
+                };
+                return UserService.createUser(userParams, (err: any, userData: IUser) => {
+                  return done(err, userData);
+                });
+              }
+            );
+          } else {
+            const userParams: IUser = {
+              name: {
+                firstName: familyName || givenName,
+                lastName: givenName || displayName,
               },
-            ],
-          };
-          return UserService.createUser(userParams, (err: any, userData: IUser) => {
-            return done(err, userData);
-          });
+              email: email,
+              source: accountSourceEnum.MICROSOFT,
+              status: accountStatusEnum.ACTIVE,
+              refId: id,
+
+              modificationNotes: [
+                {
+                  modifiedOn: new Date(Date.now()),
+                  modifiedBy: null,
+                  modificationNote: 'New user created',
+                },
+              ],
+            };
+            return UserService.createUser(userParams, (err: any, userData: IUser) => {
+              return done(err, userData);
+            });
+          }
         }
         if (currentUser.source != accountSourceEnum.MICROSOFT) {
           return done(err, false, {
             message: `You have previously signed up with a different signin method`,
           });
+        } else {
+          currentUser.lastVisited = new Date();
+          return done(null, currentUser);
         }
-        currentUser.lastVisited = new Date();
-        return done(null, currentUser);
       });
     }
   )
@@ -209,7 +322,7 @@ passport.deserializeUser(async (id: number, done: any) => {
     // THIS CAN BE SIMPLIFY BY POPULATING THE USER DURING THE FILTER
     user.populate('profilePhoto', (err: any, userData: any) => {
       if (err) return console.log(err);
-      const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.image : '';
+      const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.imageUrl : '';
       done(err, { ...userData._doc, profilePhoto });
     });
   });

@@ -88,7 +88,7 @@ export class UserController {
                   .populate('profilePhoto')
                   .then((populatedUserData: any) => {
                     const profilePhoto = populatedUserData.profilePhoto
-                      ? populatedUserData.profilePhoto?.image
+                      ? populatedUserData.profilePhoto?.imageUrl
                       : '';
                     return CommonService.successResponse(
                       'User Profile Updated Successfully',
