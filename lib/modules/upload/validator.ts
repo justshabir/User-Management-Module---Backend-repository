@@ -7,6 +7,10 @@ const uploadValidatorSchema = {
       'string.required': 'Params Id cannot be empty',
     }),
   }),
+
+  uploadImageUrl: Joi.object().keys({
+    imageUrl: Joi.string().required(),
+  }),
 };
 
 export default uploadValidatorSchema;

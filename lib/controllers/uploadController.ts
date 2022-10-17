@@ -45,14 +45,14 @@ export class UploadController {
       } else if (!imageData) {
         CommonService.failureResponse('Cannot find Image!', null, res);
       } else {
-        if (imageData.key === 'none') {
-          CommonService.successResponse('Image Fetched Successfully!', imageData, res);
-        } else {
+        if (imageData.key) {
           this.s3Params.Key = imageData.key;
           this.S3.getObject(this.s3Params, (err: any, result: any) => {
             if (err) return CommonService.failureResponse('Cant Load Image!', null, res);
             CommonService.successResponse('Image Fetched Successfully!', result, res);
           });
+        } else {
+          CommonService.successResponse('Image Fetched Successfully!', imageData, res);
         }
       }
     });
@@ -99,12 +99,7 @@ export class UploadController {
     this.uploadService.filterImage(query, (err: any, imageData: IUploadProfileImage) => {
       if (err) return CommonService.mongoError(err, res);
       if (!imageData) return CommonService.failureResponse('Cannot get Image!', null, res);
-      if (imageData.key === 'none') {
-        this.uploadService.deleteImage(query, (err: any, data: any) => {
-          if (err) return CommonService.mongoError(err, res);
-          if (data) return CommonService.successResponse('Image Deleted Successfully', null, res);
-        });
-      } else {
+      if (imageData.key) {
         this.s3Params.Key = imageData.key;
         this.S3.deleteObject(this.s3Params, (err: any) => {
           if (err) return CommonService.failureResponse('Unable to Delete File!', null, res);
@@ -112,6 +107,11 @@ export class UploadController {
             if (err) return CommonService.mongoError(err, res);
             if (data) return CommonService.successResponse('Image Deleted Successfully', null, res);
           });
+        });
+      } else {
+        this.uploadService.deleteImage(query, (err: any, data: any) => {
+          if (err) return CommonService.mongoError(err, res);
+          if (data) return CommonService.successResponse('Image Deleted Successfully', null, res);
         });
       }
     });
@@ -122,7 +122,6 @@ export class UploadController {
     if (imageUrl) {
       const imageParams = {
         imageUrl: imageUrl,
-        key: 'none',
       };
 
       this.uploadService.uploadPhoto(

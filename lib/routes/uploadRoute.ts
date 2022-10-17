@@ -7,7 +7,6 @@ import multer, { FileFilterCallback } from 'multer';
 import AuthenticationMiddleWare from '../middlewares/auth';
 import ValidatorMiddleware from '../middlewares/validator';
 import uploadValidatorSchema from '../modules/upload/validator';
-import AuthMiddleWare from '../middlewares/auth';
 import CommonService from '../modules/common/service';
 
 export class UploadRoutes {
@@ -63,7 +62,7 @@ export class UploadRoutes {
 
     app.patch(
       '/api/upload/:id/images',
-      AuthMiddleWare.verifyTokenAndAdmin,
+      AuthenticationMiddleWare.verifyToken,
       ValidatorMiddleware(uploadValidatorSchema.veryifyParamsId, 'params'),
       (req: Request, res: Response, next: NextFunction) => {
         this.upload(req, res, (err: any) => {
@@ -80,7 +79,7 @@ export class UploadRoutes {
 
     app.delete(
       '/api/upload/:id/images',
-      AuthMiddleWare.verifyTokenAndAdmin,
+      AuthenticationMiddleWare.verifyToken,
       ValidatorMiddleware(uploadValidatorSchema.veryifyParamsId, 'params'),
       (req: Request, res: Response) => {
         this.uploadController.deleteImage(req, res);
@@ -89,7 +88,8 @@ export class UploadRoutes {
 
     app.post(
       '/api/upload/image-url',
-      AuthMiddleWare.verifyTokenAndAdmin,
+      AuthenticationMiddleWare.verifyToken,
+      ValidatorMiddleware(uploadValidatorSchema.uploadImageUrl, 'body'),
       (req: Request, res: Response) => {
         this.uploadController.uploadImageUrl(req, res);
       }
@@ -97,8 +97,9 @@ export class UploadRoutes {
 
     app.patch(
       '/api/upload/image-url/:id',
-      AuthMiddleWare.verifyTokenAndAdmin,
+      AuthenticationMiddleWare.verifyToken,
       ValidatorMiddleware(uploadValidatorSchema.veryifyParamsId, 'params'),
+      ValidatorMiddleware(uploadValidatorSchema.uploadImageUrl, 'body'),
       (req: Request, res: Response) => {
         this.uploadController.updateImageUrl(req, res);
       }
