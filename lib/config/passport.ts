@@ -120,13 +120,14 @@ passport.use(
               return done(err, userData);
             });
           }
-        } else if (currentUser.source != 'google') {
+        } else if (currentUser.source !== accountSourceEnum.GOOGLE) {
           return done(err, false, {
             message: `You have previously signed up with a different signin method`,
           });
+        } else {
+          currentUser.lastVisited = new Date();
+          return done(err, currentUser);
         }
-        currentUser.lastVisited = new Date();
-        return done(err, currentUser);
       });
     }
   )
@@ -212,9 +213,10 @@ passport.use(
           return done(err, false, {
             message: `You have previously signed up with a different signin method`,
           });
+        } else {
+          currentUser.lastVisited = new Date();
+          return done(null, currentUser);
         }
-        currentUser.lastVisited = new Date();
-        return done(null, currentUser);
       });
     }
   )
@@ -299,9 +301,10 @@ passport.use(
           return done(err, false, {
             message: `You have previously signed up with a different signin method`,
           });
+        } else {
+          currentUser.lastVisited = new Date();
+          return done(null, currentUser);
         }
-        currentUser.lastVisited = new Date();
-        return done(null, currentUser);
       });
     }
   )

@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { accountSourceEnum, accountStatusEnum } from 'utils/enums';
+import { accountSourceEnum, accountStatusEnum } from '../../utils/enums';
 import { ModificationNote } from '../common/model';
 const { Schema } = mongoose;
 
