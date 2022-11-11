@@ -39,7 +39,7 @@ class App {
       cors({
         origin:
           process.env.NODE_ENV !== 'development'
-            ? process.env.PROD_CLIENT_BASE_URL?.split(',')
+            ? [...process.env.PROD_CLIENT_BASE_URL?.split(',')]
             : 'http://localhost:3000',
         methods: 'GET,POST,PUT,DELETE,PATCH',
         credentials: true,
