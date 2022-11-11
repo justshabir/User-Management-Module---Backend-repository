@@ -23,6 +23,10 @@ class App {
   private authRoutes: AuthRoutes = new AuthRoutes();
   private uploadRoutes: UploadRoutes = new UploadRoutes();
   private commonRoutes: CommonRoutes = new CommonRoutes();
+  private whitelist: string[] =
+    process.env.NODE_ENV !== 'development'
+      ? process.env.PROD_CLIENT_BASE_URL.split(',')
+      : ['http://localhost:3000'];
 
   constructor() {
     this.app = express();
@@ -33,14 +37,17 @@ class App {
     this.uploadRoutes.route(this.app);
     this.commonRoutes.route(this.app);
   }
-
   private config(): void {
     this.app.use(
       cors({
-        origin:
-          process.env.NODE_ENV !== 'development'
-            ? process.env.PROD_CLIENT_BASE_URL
-            : 'http://localhost:3000',
+        origin: function (origin, callback) {
+          if (this.whitelist.indexOf(origin) !== -1) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        },
+
         methods: 'GET,POST,PUT,DELETE,PATCH',
         credentials: true,
       })
