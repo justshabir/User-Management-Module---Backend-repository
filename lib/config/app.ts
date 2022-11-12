@@ -40,14 +40,7 @@ class App {
   private config(): void {
     this.app.use(
       cors({
-        origin: function (origin, callback) {
-          if (this.whitelist.indexOf(origin) !== -1) {
-            callback(null, true);
-          } else {
-            callback(new Error('Not allowed by CORS'));
-          }
-        },
-
+        origin: this.whitelist,
         methods: 'GET,POST,PUT,DELETE,PATCH',
         credentials: true,
       })
