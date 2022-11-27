@@ -36,7 +36,7 @@ class App {
   private config(): void {
     this.app.use(
       cors({
-        origin: [/zumaridi\.io$/, 'http://localhost:3000'],
+        origin: [/zumaridi\.io$/, 'http://localhost:3000'], //zumaridi\.io$/ will reflect any request that is coming from an origin ending with zumaridi.io.
         methods: 'GET,POST,PUT,DELETE,PATCH',
         credentials: true,
       })
