@@ -71,11 +71,11 @@ export class AuthController {
             return CommonService.mongoError(err, res);
           }
         } else {
-          // If the exist a refId, find the user with this refId and update the referrees property by adding the new user's id
+          // If the exist a refId, find the user with this refId and update the referees property by adding the new user's id
           if (refId && userData) {
             this.userService.filterUser({ refId }, (err: any, RefUser: any) => {
               if (RefUser) {
-                RefUser.referrees.push(userData._id);
+                RefUser.referees.push(userData._id);
                 RefUser.save();
               }
             });
