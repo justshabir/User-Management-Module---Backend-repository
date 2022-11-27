@@ -1,6 +1,9 @@
 import { ModificationNote } from '../common/model';
 
-export interface IUser {
+interface DocumentResult {
+  _doc?: any;
+}
+export interface IUser extends DocumentResult {
   _id?: string;
   name: {
     firstName: string;
@@ -23,6 +26,6 @@ export interface IUser {
   resetPasswordToken?: string;
   resetPasswordExpires?: number;
   modificationNotes: ModificationNote[];
-  referrees?: string[];
+  referees?: string[];
   refId: string;
 }
