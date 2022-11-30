@@ -19,7 +19,7 @@ export class UserController {
         if (err) {
           CommonService.mongoError(err, res);
         } else {
-          CommonService.successResponse('get user successfull', userData, res);
+          CommonService.successResponse('get user successfully', userData, res);
         }
       });
     } else {
