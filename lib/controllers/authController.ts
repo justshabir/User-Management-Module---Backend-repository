@@ -142,16 +142,21 @@ export class AuthController {
           res
         );
       }
-      const accessToken = authMiddleWare.createToken(user);
-      user.populate('profilePhoto', (err: any, userData: any) => {
-        if (err) return CommonService.mongoError(err, res);
-        const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.imageUrl : '';
-        const { password, ...rest } = user._doc;
-        return CommonService.successResponse(
-          'Successful',
-          { user: { ...rest, profilePhoto }, accessToken },
-          res
-        );
+      req.logIn(user, function (err) {
+        if (err) {
+          return next(err);
+        }
+        const accessToken = authMiddleWare.createToken(user);
+        user.populate('profilePhoto', (err: any, userData: any) => {
+          if (err) return CommonService.mongoError(err, res);
+          const profilePhoto = userData.profilePhoto ? userData.profilePhoto?.imageUrl : '';
+          const { password, ...rest } = user._doc;
+          return CommonService.successResponse(
+            'Successful',
+            { user: { ...rest, profilePhoto }, accessToken },
+            res
+          );
+        });
       });
     })(req, res, next);
   }
@@ -187,11 +192,8 @@ export class AuthController {
       if (userData) {
         userData.lastVisited = new Date();
         userData.save((err: any, updatedUserData: IUser) => {
-          return CommonService.successResponse(
-            'Logout successfully',
-            { id: updatedUserData?._id },
-            res
-          );
+          CommonService.successResponse('Logout successfully', { id: updatedUserData?._id }, res);
+          return req.logOut(() => {});
         });
       } else return CommonService.failureResponse('Invalid Session', err, res);
     });
