@@ -188,18 +188,6 @@ export class AuthController {
     );
   }
 
-  public logoutUser(req: Request, res: Response) {
-    this.userService.filterUser({ _id: req?.user?.id }, (err: any, userData: any) => {
-      if (userData) {
-        userData.lastVisited = new Date();
-        userData.save((err: any, updatedUserData: IUser) => {
-          CommonService.successResponse('Logout successfully', { id: updatedUserData?._id }, res);
-          return req.logOut(() => {});
-        });
-      } else return CommonService.failureResponse('Invalid Session', err, res);
-    });
-  }
-
   /**
    *
    * @returns
