@@ -59,11 +59,12 @@ export class AuthRoutes {
       }
     );
     app.get('/api/auth/check-login-status', (req: Request, res: Response) => {
+      let loggedIn = false;
       //@ts-ignore
-      const isLoggedIn = req.session.passport;
-      console.log('isLoggedIn', isLoggedIn);
-      if (isLoggedIn) return res.status(200).send({ isLoggedIn });
-      res.status(403).send({ isLoggedIn: false });
+      if (Boolean(req.session) && Boolean(req.session?.passport?.user)) {
+        loggedIn = true;
+      }
+      res.send({ loggedIn });
     });
   }
 }
