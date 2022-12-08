@@ -105,6 +105,7 @@ import expressSession from 'express-session';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import './passport';
+import MongoStore from 'connect-mongo';
 
 dotenv.config();
 class App {
@@ -145,6 +146,10 @@ class App {
         secret: process.env.SESSION_SECRET,
         resave: false,
         saveUninitialized: true,
+        store: MongoStore.create({
+          mongoUrl: this.mongoUrl,
+          touchAfter: 24 * 3600, // time period in seconds
+        }),
         cookie:
           process.env.NODE_ENV === 'development'
             ? {}
