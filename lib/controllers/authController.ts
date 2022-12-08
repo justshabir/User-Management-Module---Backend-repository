@@ -199,14 +199,14 @@ export class AuthController {
     passport.authenticate('linkedin', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
-          `${ClientBaseUrl}/login?redirect=fail&error=${encodeURIComponent(info.message)}`
+          `${ClientBaseUrl}/auth/login?redirect=fail&error=${encodeURIComponent(info.message)}`
         );
       }
       if (err) return next(err);
       req.login(user, function (err) {
         if (err) return next(err);
         if (user) {
-          return res.redirect(`${ClientBaseUrl}/login?redirect=success`);
+          return res.redirect(`${ClientBaseUrl}/auth/login?redirect=success`);
         }
       });
     })(req, res, next);
@@ -219,14 +219,14 @@ export class AuthController {
     passport.authenticate('google', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
-          `${ClientBaseUrl}/login?redirect=fail&error=${encodeURIComponent(info.message)}`
+          `${ClientBaseUrl}/auth/login?redirect=fail&error=${encodeURIComponent(info.message)}`
         );
       }
       if (err) return next(err);
       req.login(user, function (err) {
         if (err) return next(err);
         if (user) {
-          return res.redirect(`${ClientBaseUrl}/login?redirect=success`);
+          return res.redirect(`${ClientBaseUrl}/auth/login?redirect=success`);
         }
       });
     })(req, res, next);
@@ -239,14 +239,14 @@ export class AuthController {
     passport.authenticate('microsoft', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
-          `${ClientBaseUrl}/login?redirect=fail&error=${encodeURIComponent(info.message)}`
+          `${ClientBaseUrl}/auth/login?redirect=fail&error=${encodeURIComponent(info.message)}`
         );
       }
       if (err) return next(err);
       req.login(user, function (err) {
         if (err) return next(err);
         if (user) {
-          return res.redirect(`${ClientBaseUrl}/login?redirect=success`);
+          return res.redirect(`${ClientBaseUrl}/auth/login?redirect=success`);
         }
       });
     })(req, res, next);
