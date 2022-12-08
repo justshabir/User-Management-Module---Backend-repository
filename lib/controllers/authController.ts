@@ -13,6 +13,7 @@ import { accountStatusEnum } from '../utils/enums';
 import { v4 as uuid } from 'uuid';
 import UserPermissionsService from '../modules/userPermissions/service';
 import { IUserPermissions } from '../modules/userPermissions/model';
+import { MongooseError } from 'mongoose';
 export class AuthController {
   private userService: UserService = new UserService();
   private mailService: MailerService = new MailerService();
@@ -178,7 +179,7 @@ export class AuthController {
           if (updatedUserData) {
             return CommonService.successResponse(
               'Account verified',
-              { id: updatedUserData?._id },
+              { id: updatedUserData?._id, email: updatedUserData.email },
               res
             );
           } else return CommonService.failureResponse('Account Verification Failed', err, res);
@@ -211,14 +212,14 @@ export class AuthController {
     passport.authenticate('linkedin', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
-          `${ClientBaseUrl}/login?redirect=fail&error=${encodeURIComponent(info.message)}`
+          `${ClientBaseUrl}/auth/login?redirect=fail&error=${encodeURIComponent(info.message)}`
         );
       }
       if (err) return next(err);
       req.login(user, function (err) {
         if (err) return next(err);
         if (user) {
-          return res.redirect(`${ClientBaseUrl}/login?redirect=success`);
+          return res.redirect(`${ClientBaseUrl}/auth/login?redirect=success`);
         }
       });
     })(req, res, next);
@@ -226,18 +227,19 @@ export class AuthController {
   public google() {
     return passport.authenticate('google', { scope: ['email', 'profile'] });
   }
+
   public googleCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('google', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
-          `${ClientBaseUrl}/login?redirect=fail&error=${encodeURIComponent(info.message)}`
+          `${ClientBaseUrl}/auth/login?redirect=fail&error=${encodeURIComponent(info.message)}`
         );
       }
       if (err) return next(err);
       req.login(user, function (err) {
         if (err) return next(err);
         if (user) {
-          return res.redirect(`${ClientBaseUrl}/login?redirect=success`);
+          return res.redirect(`${ClientBaseUrl}/auth/login?redirect=success`);
         }
       });
     })(req, res, next);
@@ -250,16 +252,48 @@ export class AuthController {
     passport.authenticate('microsoft', function (err, user, info) {
       if (info && Object.keys(info).length) {
         return res.redirect(
-          `${ClientBaseUrl}/login?redirect=fail&error=${encodeURIComponent(info.message)}`
+          `${ClientBaseUrl}/auth/login?redirect=fail&error=${encodeURIComponent(info.message)}`
         );
       }
       if (err) return next(err);
       req.login(user, function (err) {
         if (err) return next(err);
         if (user) {
-          return res.redirect(`${ClientBaseUrl}/login?redirect=success`);
+          return res.redirect(`${ClientBaseUrl}/auth/login?redirect=success`);
         }
       });
     })(req, res, next);
+  }
+
+  //logout
+  public logoutUser(req: Request, res: Response) {
+    this.userService.filterUser({ _id: req?.user?.id }, (err: any, userData: any) => {
+      if (userData) {
+        userData.lastVisited = new Date();
+        userData.save();
+      }
+      req.logOut((err) => {
+        //@ts-ignore
+        req.session.passport = undefined;
+        req.session.touch();
+        req.session.save();
+        req.session.destroy(() => {});
+      });
+      return CommonService.successResponse('Logout successfully', null, res);
+    });
+  }
+
+  public checkLoginStatus(req: Request, res: Response) {
+    const session = req.session;
+    //@ts-ignore
+    const user = session ? session.passport?.user : null;
+    if (Boolean(session) && Boolean(user)) {
+      this.userService.filterUser({ _id: user }, (err: MongooseError, currentUser: IUser) => {
+        // console.log('res', err, currentUser);
+
+        if (currentUser) return CommonService.successResponse('logged In', currentUser, res);
+      });
+    }
+    CommonService.successResponse('Not logged in', { loggedIn: false }, res);
   }
 }
