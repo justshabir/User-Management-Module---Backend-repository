@@ -14,6 +14,7 @@ import './passport';
 dotenv.config();
 class App {
   public app: express.Application;
+
   public mongoUrl =
     process.env.NODE_ENV === 'development'
       ? `mongodb://localhost/${environment.getDBName()}`
