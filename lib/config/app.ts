@@ -37,7 +37,12 @@ class App {
   private config(): void {
     this.app.use(
       cors({
-        origin: [/zumaridi\.io$/, 'http://localhost:3000'], //zumaridi\.io$/ will reflect any request that is coming from an origin ending with zumaridi.io.
+        origin: [
+          /zumaridi\.io$/,
+          'http://localhost:3000',
+          'http://localhost:4443',
+          'https://zumaridi.vercel.app',
+        ], //zumaridi\.io$/ will reflect any request that is coming from an origin ending with zumaridi.io.
         methods: 'GET,POST,PUT,DELETE,PATCH',
         credentials: true,
       })
@@ -49,6 +54,7 @@ class App {
       expressSession({
         secret: process.env.SESSION_SECRET,
         resave: false,
+
         saveUninitialized: true,
         store: MongoStore.create({
           mongoUrl: this.mongoUrl,
@@ -56,8 +62,13 @@ class App {
         }),
         cookie:
           process.env.NODE_ENV === 'development'
-            ? {}
-            : { secure: true, httpOnly: false, sameSite: 'none', maxAge: 60 * 60 * 24 * 1000 },
+            ? {
+                secure: false,
+                httpOnly: true,
+                sameSite: 'strict',
+                maxAge: 24 * 60 * 60 * 1000,
+              }
+            : { secure: true, httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 1000 },
       })
     );
     this.app.use(passport.initialize());

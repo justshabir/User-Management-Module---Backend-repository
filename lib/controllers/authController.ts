@@ -187,18 +187,6 @@ export class AuthController {
     );
   }
 
-  public logoutUser(req: Request, res: Response) {
-    this.userService.filterUser({ _id: req?.user?.id }, (err: any, userData: any) => {
-      if (userData) {
-        userData.lastVisited = new Date();
-        userData.save((err: any, updatedUserData: IUser) => {
-          CommonService.successResponse('Logout successfully', { id: updatedUserData?._id }, res);
-          return req.logOut(() => {});
-        });
-      } else return CommonService.failureResponse('Invalid Session', err, res);
-    });
-  }
-
   /**
    *
    * @returns
@@ -226,6 +214,7 @@ export class AuthController {
   public google() {
     return passport.authenticate('google', { scope: ['email', 'profile'] });
   }
+
   public googleCallback(req: Request, res: Response, next: NextFunction) {
     passport.authenticate('google', function (err, user, info) {
       if (info && Object.keys(info).length) {
@@ -261,5 +250,23 @@ export class AuthController {
         }
       });
     })(req, res, next);
+  }
+
+  //logout
+  public logoutUser(req: Request, res: Response) {
+    this.userService.filterUser({ _id: req?.user?.id }, (err: any, userData: any) => {
+      if (userData) {
+        userData.lastVisited = new Date();
+        userData.save();
+      }
+      req.logOut((err) => {
+        //@ts-ignore
+        req.session.passport = undefined;
+        req.session.touch();
+        req.session.save();
+        req.session.destroy(() => {});
+      });
+      return CommonService.successResponse('Logout successfully', null, res);
+    });
   }
 }
