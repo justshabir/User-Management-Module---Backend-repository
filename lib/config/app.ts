@@ -55,7 +55,6 @@ class App {
       expressSession({
         secret: process.env.SESSION_SECRET,
         resave: false,
-
         saveUninitialized: true,
         store: MongoStore.create({
           mongoUrl: this.mongoUrl,
@@ -69,7 +68,7 @@ class App {
                 sameSite: 'strict',
                 maxAge: 24 * 60 * 60 * 1000,
               }
-            : { secure: true, httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 1000 },
+            : { secure: true, httpOnly: true, sameSite: 'none', maxAge: 60 * 60 * 24 * 1000 },
       })
     );
     this.app.use(passport.initialize());
