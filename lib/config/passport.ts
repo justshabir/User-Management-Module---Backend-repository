@@ -208,8 +208,7 @@ passport.use(
               return done(err, userData);
             });
           }
-        }
-        if (currentUser.source != accountSourceEnum.LINKEDIN) {
+        } else if (currentUser.source != accountSourceEnum.LINKEDIN) {
           return done(err, false, {
             message: `You have previously signed up with a different signin method`,
           });
@@ -296,8 +295,7 @@ passport.use(
               return done(err, userData);
             });
           }
-        }
-        if (currentUser.source != accountSourceEnum.MICROSOFT) {
+        } else if (currentUser.source != accountSourceEnum.MICROSOFT) {
           return done(err, false, {
             message: `You have previously signed up with a different signin method`,
           });
