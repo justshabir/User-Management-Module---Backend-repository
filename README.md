@@ -11,3 +11,5 @@
 2. `npm run lint` to lint the folders using eslint
 3. `npm run format:write` to format the code to the configure structure using prettier
 4. `npm run dev` to start the applicaition in development mode
+
+create a .env file and copy content in .env.example into it... use can make changes to the configuration as you needed
