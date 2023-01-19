@@ -314,8 +314,10 @@ passport.serializeUser((user: IUser, done: any) => {
 passport.deserializeUser(async (id: number, done: any) => {
   const userFilter = { _id: id };
   UserService.filterUser(userFilter, (err: any, user: any) => {
-    if (err) {
-      console.log('Passport serialization error', err);
+    if (err || !user) {
+      done(err, null);
+      console.log('Passport deserializeUser error', err);
+      return;
     }
     // THIS CAN BE SIMPLIFY BY POPULATING THE USER DURING THE FILTER
     user.populate('profilePhoto', (err: any, userData: any) => {
