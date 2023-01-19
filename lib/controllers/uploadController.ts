@@ -8,7 +8,7 @@ import { S3Aws } from '../utils/aws';
 export class UploadController {
   private uploadService: UploadService = new UploadService();
   private S3: aws.S3 = new S3Aws();
-  private s3Params = { Bucket: process.env.AMAZON_S3_PROPERTY_IMAGES_BUCKET, Key: '' };
+  private s3Params = { Bucket: process.env.AMAZON_S3_BUCKET, Key: '' };
 
   public uploadProfileImage(req: any, res: Response) {
     if (req.file?.location && req.file?.key) {
