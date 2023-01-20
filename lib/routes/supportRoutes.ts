@@ -23,7 +23,7 @@ export class SupportRoutes {
     },
     storage: multerS3({
       s3: this.S3,
-      bucket: process.env.AMAZON_S3_PROPERTY_IMAGES_BUCKET,
+      bucket: process.env.AMAZON_S3_BUCKET,
       metadata: function (req: Request, file: any, cb: any) {
         cb(null, { fieldName: file.fieldname });
       },
