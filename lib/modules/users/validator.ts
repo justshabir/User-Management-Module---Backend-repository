@@ -53,5 +53,13 @@ const userValidatorSchema = {
       'string.pattern.base': stringPassswordError,
     }),
   }),
+  verifyReferral: Joi.object().keys({
+    firstName: Joi.string().min(3).required(),
+    lastName: Joi.string().min(3).required(),
+    email: Joi.string().email().required(),
+    subject: Joi.string().required(),
+    message: Joi.string().required(),
+    refId: Joi.string().required(),
+  }),
 };
 export default userValidatorSchema;

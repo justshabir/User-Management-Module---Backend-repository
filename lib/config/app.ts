@@ -5,6 +5,7 @@ import { UserRoutes } from '../routes/userRoutes';
 import { CommonRoutes } from '../routes/commonRoutes';
 import { AuthRoutes } from '../routes/authRoutes';
 import { UploadRoutes } from '../routes/uploadRoute';
+import { SupportRoutes } from '../routes/supportRoutes';
 import passport from 'passport';
 import expressSession from 'express-session';
 import cors from 'cors';
@@ -24,6 +25,7 @@ class App {
   private userRoutes: UserRoutes = new UserRoutes();
   private authRoutes: AuthRoutes = new AuthRoutes();
   private uploadRoutes: UploadRoutes = new UploadRoutes();
+  private supportRoutes: SupportRoutes = new SupportRoutes();
   private commonRoutes: CommonRoutes = new CommonRoutes();
   constructor() {
     this.app = express();
@@ -32,6 +34,7 @@ class App {
     this.authRoutes.route(this.app);
     this.userRoutes.route(this.app);
     this.uploadRoutes.route(this.app);
+    this.supportRoutes.route(this.app);
     this.commonRoutes.route(this.app);
   }
 
