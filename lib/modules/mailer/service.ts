@@ -1,6 +1,12 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import dotenv from 'dotenv';
-import { IConfirmationMail, IConfirmPasswordUpdate, IForgotPassword } from './model';
+import {
+  IConfirmationMail,
+  IConfirmPasswordUpdate,
+  IForgotPassword,
+  ISendReferral,
+  IRequestSupport,
+} from './model';
 import {
   CONFIRM_ACCOUNT_SUBJECT,
   CONFIRM_PASSWORD_UPDATE_SUBJECT,
@@ -10,6 +16,9 @@ import confirmPasswordUpdate from '../../templates/confirmPasswordUpdate';
 import forgotPassword from '../../templates/forgotPassword';
 import { ClientBaseUrl } from '../../config/app';
 import confirmAccount from '../../templates/confirmAccount';
+import referAFriend from '../../templates/referAFriend';
+import requestTechnicalSupport from '../../templates/requestTechnicalSupport';
+import technicalSupportReceived from '../../templates/technicalSupportReceived';
 
 dotenv.config();
 
@@ -83,6 +92,88 @@ export default class MailerService {
           from: this.user,
           to: params.email,
           subject: PASSWORD_RESET_LINK,
+          html: html,
+        },
+        (error) => {
+          if (error) throw new Error(error.toString());
+          else return true;
+        }
+      );
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+  public async sendTechnicalSupportConfirmation(params: IRequestSupport) {
+    try {
+      const html = technicalSupportReceived(
+        params.ticketId,
+        this.client_base_url,
+        params.name,
+        params.subject
+      );
+      await this.transporter.verify();
+      this.transporter.sendMail(
+        {
+          from: this.user,
+          to: params.email,
+          subject: params.subject,
+          html: html,
+        },
+        (error) => {
+          if (error) throw new Error(error.toString());
+          else return true;
+        }
+      );
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  public async requestTechnicalSupport(params: IRequestSupport) {
+    try {
+      const html = requestTechnicalSupport(
+        params.ticketId,
+        params.name,
+        params.subject,
+      );
+      await this.transporter.verify();
+      this.transporter.sendMail(
+        {
+          from: this.user,
+          to: this.user,
+          subject: params.subject,
+          html: html,
+          ...(params.file && {attachments: [
+            {
+              filename: params.file?.originalname,
+              path:params.file?.location,
+            },
+          ]})
+        },
+        (error) => {
+          if (error) throw new Error(error.toString());
+          else return true;
+        }
+      );
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  public async sendReferral(params: ISendReferral) {
+    try {
+      const html = referAFriend(
+        params.refId,
+        this.client_base_url,
+        params.firstName,
+        params.lastName
+      );
+      await this.transporter.verify();
+      this.transporter.sendMail(
+        {
+          from: this.user,
+          to: params.email,
+          subject: `${params.firstName} ${params.lastName} Wants You to Join!`,
           html: html,
         },
         (error) => {

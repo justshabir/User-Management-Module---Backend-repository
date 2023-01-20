@@ -18,3 +18,21 @@ export interface IForgotPassword {
   email: string;
   token: string;
 }
+
+export interface IRequestSupport {
+  ticketId: string;
+  name: string,
+  email: string;
+  subject: string;
+  message?: string;
+  file?: any;
+}
+
+export interface ISendReferral {
+  firstName: string;
+  lastName: string;
+  email: string;
+  subject: string;
+  message: string;
+  refId: string;
+}
