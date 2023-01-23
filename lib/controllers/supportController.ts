@@ -3,8 +3,8 @@ import { v4 as uuid } from 'uuid';
 import CommonService from '../modules/common/service';
 import MailerService from '../modules/mailer/service';
 import SupportService from '../modules/support/service';
-import { IRequestSupport } from 'modules/mailer/model';
-import { IPage, ITechnicalSupport, IUpdateTechnicalSupport } from 'modules/support/model';
+import { IRequestSupport } from '../modules/mailer/model';
+import { IPage, ITechnicalSupport, IUpdateTechnicalSupport } from '../modules/support/model';
 
 export class SupportController {
   private mailService: MailerService = new MailerService();
