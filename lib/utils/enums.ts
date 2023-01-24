@@ -10,3 +10,8 @@ export enum accountStatusEnum {
   PENDING = 'Pending',
   SUSPENDED = 'Suspended',
 }
+
+export enum accountTypeEnum {
+  PERSONAL = 'personal',
+  BUSINESS = 'business',
+}

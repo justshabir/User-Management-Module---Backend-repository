@@ -76,6 +76,12 @@ const schema = new Schema(
         ref: 'users',
       },
     ],
+    teams: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'organizations',
+      },
+    ],
   },
   {
     timestamps: true,
