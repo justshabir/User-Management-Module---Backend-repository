@@ -1,4 +1,4 @@
-import Joi from "joi";
+import Joi from 'joi';
 
 const technicalSupportSchema = {
   validateId: Joi.object().keys({
@@ -16,7 +16,7 @@ const technicalSupportSchema = {
     file: Joi.any(),
   }),
   updateSupport: Joi.object().keys({
-    status: Joi.boolean().required().messages({'string.status':'input required'}),
+    status: Joi.boolean().required().messages({ 'string.status': 'input required' }),
   }),
 };
 

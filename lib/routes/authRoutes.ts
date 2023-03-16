@@ -31,6 +31,7 @@ export class AuthRoutes {
         this.authController.activateAccount(req, res);
       }
     );
+    
 
     app.get('/api/auth/linkedin', this.authController.linkedIn());
     app.get('/api/auth/linkedin/callback', (req: Request, res: Response, next: NextFunction) => {

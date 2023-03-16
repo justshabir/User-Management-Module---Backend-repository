@@ -1,4 +1,4 @@
-### Zumaridi User Management Module - Backend repository
+### User Management Module - Backend repository
 
 ## Prerequisite
 

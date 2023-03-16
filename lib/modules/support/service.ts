@@ -18,11 +18,11 @@ export default class SupportService {
     Support.findOneAndUpdate(query, updateParams, { new: true }, callback);
   }
   public deleteSupport(_id: string, callback: any) {
-    const query = {_id}
+    const query = { _id };
     Support.findOneAndDelete(query, callback);
   }
 
   public fetchAllSupport(pageDetails: IPage, callback: any) {
-    Support.find( callback).skip(pageDetails.skip).limit(pageDetails.limit).sort();
+    Support.find(callback).skip(pageDetails.skip).limit(pageDetails.limit).sort();
   }
 }

@@ -15,6 +15,8 @@ import './passport';
 import MongoStore from 'connect-mongo';
 
 dotenv.config();
+
+
 class App {
   public app: express.Application;
 
@@ -39,6 +41,7 @@ class App {
     this.supportRoutes.route(this.app);
     this.commonRoutes.route(this.app);
     this.orgRoutes.route(this.app);
+
   }
 
   private config(): void {
@@ -95,4 +98,5 @@ export const ClientBaseUrl =
   process.env.NODE_ENV !== 'development'
     ? process.env.PROD_CLIENT_BASE_URL
     : 'http://localhost:3000';
+
 export default new App().app;

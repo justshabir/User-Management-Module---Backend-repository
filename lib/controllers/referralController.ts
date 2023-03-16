@@ -22,7 +22,7 @@ export class ReferralController {
       } else {
         return CommonService.successResponse(
           'Referral id fetched Successfully!',
-          { refId: referralData?.refId, name:referralData?.name },
+          { refId: referralData?.refId, name: referralData?.name },
           res
         );
       }
@@ -34,13 +34,13 @@ export class ReferralController {
     if (!referralDetails) {
       return CommonService.insufficientParameters(res);
     }
-     this.mailService
-       .sendReferral(referralDetails)
-       .then(() => {
-         return CommonService.successResponse('Message Sent Successfully', null, res);
-       })
-       .catch(() => {
-         return CommonService.failureResponse('Mailer Service error', null, res);
-       });
+    this.mailService
+      .sendReferral(referralDetails)
+      .then(() => {
+        return CommonService.successResponse('Message Sent Successfully', null, res);
+      })
+      .catch(() => {
+        return CommonService.failureResponse('Mailer Service error', null, res);
+      });
   }
 }

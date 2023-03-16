@@ -131,11 +131,7 @@ export default class MailerService {
 
   public async requestTechnicalSupport(params: IRequestSupport) {
     try {
-      const html = requestTechnicalSupport(
-        params.ticketId,
-        params.name,
-        params.subject,
-      );
+      const html = requestTechnicalSupport(params.ticketId, params.name, params.subject);
       await this.transporter.verify();
       this.transporter.sendMail(
         {
@@ -143,12 +139,14 @@ export default class MailerService {
           to: this.user,
           subject: params.subject,
           html: html,
-          ...(params.file && {attachments: [
-            {
-              filename: params.file?.originalname,
-              path:params.file?.location,
-            },
-          ]})
+          ...(params.file && {
+            attachments: [
+              {
+                filename: params.file?.originalname,
+                path: params.file?.location,
+              },
+            ],
+          }),
         },
         (error) => {
           if (error) throw new Error(error.toString());

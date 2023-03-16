@@ -73,8 +73,8 @@ export class UserRoutes {
         (req: Request, res: Response) => {
           this.userController.deleteUser(req, res);
         }
-    );
-    
+      );
+
     app.get(
       '/api/users/:id/referral-code',
       ValidatorMiddleware(userValidatorSchema.verifyParamsId, 'params'),
